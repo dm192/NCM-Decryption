@@ -3,226 +3,576 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NCM 前端批量解密器 · 带弹窗播放器</title>
+  <title>NCM 前端批量解密器 · 播放器增强版</title>
+
+  <!-- UI 依赖（保持原样） -->
   <link href="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/js/mdui.min.js"></script>
+
+  <!-- 加密/zip/save 支持 -->
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
   <style>
-    :root{--bg:#071225;--card:#0f1724;--muted:#9fb3c8;--accent:#7c3aed;--accent2:#6ee7b7;--footer-height:72px}
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#e6eef8;background:linear-gradient(180deg,var(--bg),#041222)}
-    .page{min-height:100vh;display:flex;flex-direction:column}
-    .container{width:100%;max-width:1280px;margin:0 auto;padding:18px;flex:1;display:flex;flex-direction:column}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:18px;box-shadow:0 12px 40px rgba(2,6,23,.55);display:flex;flex-direction:column;flex:1;min-height:320px;overflow:hidden}
-    header.row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-    h1{margin:0;font-size:20px}
-    .subtitle{color:var(--muted);font-size:13px;margin-top:6px}
-    .controls{display:flex;gap:8px;align-items:center}
-    .btn{padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#4c1d95);color:white;cursor:pointer;box-shadow:0 6px 18px rgba(124,58,237,.08);transition:transform .18s ease, box-shadow .18s ease}
-    .btn:hover{transform:translateY(-3px);box-shadow:0 16px 30px rgba(0,0,0,.45)}
-    .btn.outline{background:transparent;border:1px solid rgba(255,255,255,0.04)}
-    .drop{margin-top:12px;border:2px dashed rgba(255,255,255,0.04);padding:18px;border-radius:12px;text-align:center;cursor:pointer;transition:all .18s}
-    .drop.drag{background:rgba(124,58,237,0.04);border-color:rgba(124,58,237,0.5);transform:scale(1.01)}
-    .list{margin-top:14px;display:flex;flex-direction:column;gap:8px;flex:1;overflow:auto;padding-right:6px}
-    .rowItem{display:grid;grid-template-columns:96px 1fr 110px 110px 240px;gap:12px;align-items:center;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.005), rgba(255,255,255,0.002));transition:transform .18s ease, background .18s ease}
-    .rowItem:hover{transform:translateY(-6px);background:linear-gradient(90deg, rgba(124,58,237,0.04), rgba(110,231,183,0.02));}
-    .rowHeader{font-size:13px;color:var(--muted);font-weight:700}
-    .cover{width:88px;height:88px;border-radius:8px;object-fit:cover;background:linear-gradient(180deg,#09101a,#0b1320)}
-    .cover.round{border-radius:50%}
-    .title{font-weight:700}
-    .meta{color:var(--muted);font-size:13px;margin-top:6px}
-    .progress{height:8px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
-    .progress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .3s linear}
+    :root{--bg:#071225;--muted:#9fb3c8;--accent:#7c3aed;--accent2:#6ee7b7}
+    html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;color:#e6eef8;background:linear-gradient(180deg,var(--bg),#041222)}
+    .wrap{max-width:1200px;margin:28px auto;padding:16px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,0.55)}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .title{font-size:20px;margin:0}
+    .subtitle{color:var(--muted);font-size:13px}
+    .controls{display:flex;gap:8px}
+    .btn{padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#4c1d95);color:white;cursor:pointer}
+    .btn.outline{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    .drop{margin-top:12px;border:2px dashed rgba(255,255,255,0.04);padding:14px;border-radius:10px;text-align:center;cursor:pointer}
+    .list{margin-top:14px;display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto;padding-right:6px}
+    .row{display:grid;grid-template-columns:84px 1fr 90px 90px 220px;gap:12px;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.005), rgba(255,255,255,0.002));transition:transform .15s}
+    .row:hover{transform:translateY(-6px)}
+    .cover{width:72px;height:72px;border-radius:8px;object-fit:cover;background:#08101a}
+    .titleStrong{font-weight:700}
+    .meta{color:var(--muted);font-size:13px}
     .small{font-size:12px;color:var(--muted)}
-    .muted{color:var(--muted)}
-    @media (max-width:1000px){.rowItem{grid-template-columns:72px 1fr 80px 80px 140px}.cover{width:64px;height:64px}}
+    .rightActions{display:flex;gap:8px;justify-content:flex-end}
+    .iconBtn{background:transparent;border:none;padding:6px;border-radius:8px;color:#e6eef8;cursor:pointer}
+    .iconBtn:hover{background:rgba(255,255,255,0.02)}
+    /* compact progress inside row */
+    .rowProgress{height:6px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
+    .rowProgress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
     /* modal player */
-    .modalMask{position:fixed;inset:0;background:rgba(2,6,23,0.6);display:none;align-items:center;justify-content:center;z-index:1200}
-    .modal{width:min(760px,92vw);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:20px;box-shadow:0 30px 80px rgba(2,6,23,.7);display:flex;gap:18px;align-items:center}
-    .disc{width:180px;height:180px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03), transparent);box-shadow:inset 0 4px 14px rgba(0,0,0,0.4)}
-    .disc img{width:84%;height:84%;border-radius:50%;object-fit:cover;transition:transform .6s linear}
-    .disc.rotating img{animation:spin 6s linear infinite}
-    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .modalMask{position:fixed;inset:0;background:rgba(1,6,12,0.6);display:none;align-items:center;justify-content:center;z-index:2000}
+    .modal{width:min(760px,94vw);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,0.6);display:flex;gap:16px;align-items:center}
+    .disc{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03), transparent);box-shadow:inset 0 6px 18px rgba(0,0,0,0.4)}
+    .disc img{width:84%;height:84%;border-radius:50%;object-fit:cover;transform-origin:50% 50%}
     .playerInfo{flex:1}
     .playerTitle{font-size:18px;font-weight:700}
     .playerSub{color:var(--muted);margin-top:6px}
-    .playerControls{display:flex;align-items:center;gap:12px;margin-top:12px}
-    .progressBar{width:100%;height:8px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
-    .progressBar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .1s linear}
-    .smallBtn{padding:6px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.03);color:white;cursor:pointer}
-    footer.siteFooter{height:72px;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.06));border-top:1px solid rgba(255,255,255,0.02)}
-    .footerInner{max-width:1280px;width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 18px}
-    .logoPlaceholder{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.03);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
-    .bgGlow{position:fixed;right:-20%;bottom:-10%;width:60vmax;height:60vmax;border-radius:50%;background:radial-gradient(circle at 30% 30%, rgba(124,58,237,0.12), transparent 20%), radial-gradient(circle at 70% 70%, rgba(110,231,183,0.08), transparent 20%);filter:blur(80px);pointer-events:none;z-index:0;mix-blend-mode:screen;animation:float 18s infinite linear}
-    @keyframes float{0%{transform:translateY(0) rotate(0);}50%{transform:translateY(-30px) rotate(10deg);}100%{transform:translateY(0) rotate(0);}}
+    .playerTime{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
+    .progressBar{width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden;cursor:pointer;margin-top:8px}
+    .progressBar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .08s linear}
+    .playerControls{display:flex;align-items:center;gap:10px;margin-top:12px}
+    .playerIcon{width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,0.03);display:inline-grid;place-items:center;cursor:pointer}
+    .footer{margin-top:14px;color:var(--muted);font-size:13px}
+    /* responsive */
+    @media (max-width:900px){ .row{grid-template-columns:64px 1fr 80px 80px 140px} .disc{width:120px;height:120px} }
   </style>
 </head>
-<body class="mdui-typo">
-  <div class="page">
-    <div class="bgGlow" aria-hidden="true"></div>
-    <div class="container">
-      <div class="card" role="main">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
-          <div>
-            <h1>NCM 前端批量解密器 <span class="small muted">带弹窗播放器</span></h1>
-            <div class="subtitle">点击播放会弹出专属播放器窗口，封面为圆形并旋转，支持下载封面。</div>
-          </div>
-          <div class="controls">
-            <button id="clearBtn" class="btn outline">清空</button>
-            <button id="zipBtn" class="btn" disabled>全部打包 ZIP</button>
-          </div>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="top">
+        <div>
+          <h2 class="title">NCM 前端批量解密器 · 播放器增强版</h2>
+          <div class="subtitle">点击播放会弹出专属播放器窗口。现在支持进度定位、显示时长、封面旋转保持角度、图标控件与即时释放内存。</div>
         </div>
-
-        <div id="drop" class="drop" role="button" tabindex="0" aria-label="拖放或选择文件">
-          <div style="font-weight:600">把 .ncm 文件拖到这里，或点击选择文件</div>
-          <div class="small muted" style="margin-top:8px">支持批量、封面预览、播放预览、单曲下载与批量打包</div>
-          <div style="margin-top:10px"><label class="btn" style="cursor:pointer">选择文件<input id="fileInput" type="file" accept=".ncm" multiple hidden></label></div>
+        <div class="controls">
+          <button id="clearBtn" class="btn outline">清空</button>
+          <button id="zipBtn" class="btn" disabled>全部打包 ZIP</button>
+          <button id="releaseBtn" class="btn outline">释放内存</button>
         </div>
-
-        <div class="list" id="list" aria-live="polite">
-          <div class="rowItem rowHeader" style="padding:10px 12px">
-            <div>封面</div><div>歌曲信息</div><div>格式</div><div>时长</div><div style="text-align:right">操作</div>
-          </div>
-        </div>
-
       </div>
+
+      <div id="drop" class="drop" tabindex="0" style="margin-top:12px">
+        <div style="font-weight:600">把 .ncm 文件拖到这里，或点击选择文件</div>
+        <div class="small" style="margin-top:6px;color:var(--muted)">支持批量；播放窗口支持定位与时长显示；内存可手动释放，无需刷新。</div>
+        <div style="margin-top:10px"><label class="btn" style="cursor:pointer">选择文件<input id="fileInput" type="file" accept=".ncm" multiple hidden></label></div>
+      </div>
+
+      <div class="list" id="list" aria-live="polite">
+        <!-- header row -->
+        <div class="row" style="font-weight:700;color:var(--muted);font-size:13px">
+          <div>封面</div><div>歌曲信息</div><div>格式</div><div>时长</div><div style="text-align:right">操作</div>
+        </div>
+        <!-- rows appended here -->
+      </div>
+
+      <div class="footer">提示：为避免大文件占用过多内存，建议分批处理。解密在本地完成，请遵守版权法规。</div>
     </div>
-
-    <footer class="siteFooter" role="contentinfo">
-      <div class="footerInner">
-        <div class="logoPlaceholder" id="footerLogo" title="把你的 logo 拖到这里或上传">你的 Logo</div>
-        <div class="muted small">本工具仅作学习与个人备份，请遵守相关法律与服务条款。</div>
-      </div>
-    </footer>
   </div>
 
-  <!-- 弹窗播放器 -->
-  <div id="modalMask" class="modalMask" role="dialog" aria-hidden="true">
-    <div class="modal" role="document">
-      <div class="disc" id="disc">
-        <img id="discImg" src="" alt="cover">
-      </div>
+  <!-- modal player -->
+  <div id="modal" class="modalMask" role="dialog" aria-hidden="true">
+    <div class="modal" role="document" aria-label="播放器">
+      <div class="disc" id="disc"><img id="discImg" src="" alt="cover"></div>
       <div class="playerInfo">
         <div class="playerTitle" id="playerTitle">未知</div>
         <div class="playerSub" id="playerSub">未知</div>
-        <div style="margin-top:12px" class="progressBar" aria-hidden="false"><i id="playerProgress"></i></div>
+
+        <div class="playerTime"><span id="curTime">0:00</span><span id="durTime">0:00</span></div>
+        <div id="playerProgressBar" class="progressBar" title="点击或拖动定位"><i id="playerProgressFill"></i></div>
+
         <div class="playerControls">
-          <button id="playerPlay" class="smallBtn">播放</button>
-          <button id="playerPause" class="smallBtn" style="display:none">暂停</button>
-          <button id="playerDownloadCover" class="smallBtn">下载封面</button>
-          <button id="playerClose" class="smallBtn">关闭</button>
+          <!-- 左：图标按钮（SVG） -->
+          <button id="btnPrev" class="playerIcon" title="上一个（未实现）" aria-hidden="true">
+            <!-- rewind icon -->
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 19V5l-9 7 9 7zM22 19V5l-9 7 9 7z"></path></svg>
+          </button>
+
+          <button id="btnPlay" class="playerIcon" title="播放">
+            <!-- play -->
+            <svg id="iconPlay" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 3v18l15-9L5 3z"></path></svg>
+            <svg id="iconPause" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="display:none"><path d="M6 19h4V5H6v14zM14 5v14h4V5h-4z"></path></svg>
+          </button>
+
+          <button id="btnStop" class="playerIcon" title="停止">
+            <!-- stop -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>
+          </button>
+
+          <button id="btnDownloadCover" class="playerIcon" title="下载封面">
+            <!-- image icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="14" rx="2"></rect><path d="M21 15l-5-5-4 4-3-3-4 4"></path></svg>
+          </button>
+
+          <div style="flex:1"></div>
+
+          <button id="btnClose" class="playerIcon" title="关闭">✕</button>
         </div>
       </div>
     </div>
   </div>
 
 <script>
-// constants & helpers
+/*
+  功能要点实现：
+   - 进度条可点击定位（并支持拖动定位：用 pointer events）
+   - 显示当前时间 / 总时长
+   - 封面旋转用 JS RAF 控制（播放时增角度，暂停时停止 RAF -> 保持角度）
+   - 控制按钮用图标 (SVG)
+   - 增加“释放内存”按钮：撤销所有 objectURLs、停止播放并清理引用，前端不需刷新即可回收
+   - 其它：保留原 ncm 解密逻辑（略去注释重复）
+*/
+
 const CORE_KEY = CryptoJS.enc.Utf8.parse('hzHRAmso5kInbaxW');
-const META_KEY = CryptoJS.enc.Utf8.parse("#14ljk_!\\\\]&0U<'(");
-const $ = s => document.querySelector(s);
-const list = $('#list'); const drop = $('#drop'); const inputFile = $('#fileInput'); const zipBtn = $('#zipBtn'); const clearBtn = $('#clearBtn');
-const modal = document.getElementById('modalMask'); const disc = $('#disc'); const discImg = $('#discImg'); const playerTitle = $('#playerTitle'); const playerSub = $('#playerSub'); const playerProgress = $('#playerProgress');
-const playerPlay = $('#playerPlay'); const playerPause = $('#playerPause'); const playerClose = $('#playerClose'); const playerDownloadCover = $('#playerDownloadCover');
-let zip = null; let objectURLs = []; let currentAudio = null; let currentCoverBlob = null;
+const META_KEY = CryptoJS.enc.Utf8.parse("#14ljk_!\\]&0U<'(");
 
-// drag & drop handlers
-['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('drag')}));
-['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('drag')}));
-drop.addEventListener('drop', e=>handleFiles(e.dataTransfer.files)); inputFile.addEventListener('change', e=>handleFiles(e.target.files)); clearBtn.addEventListener('click', clearAll); zipBtn.addEventListener('click', async ()=>{ if (!zip) return; const blob = await zip.generateAsync({type:'blob'}); saveAs(blob, `ncm_exports_${Date.now()}.zip`); });
+const list = document.getElementById('list');
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('fileInput');
+const zipBtn = document.getElementById('zipBtn');
+const clearBtn = document.getElementById('clearBtn');
+const releaseBtn = document.getElementById('releaseBtn');
 
-function clearAll(){ objectURLs.forEach(u=>URL.revokeObjectURL(u)); objectURLs=[]; list.querySelectorAll('.rowItem.item').forEach(n=>n.remove()); zip=null; zipBtn.disabled=true; mdui.snackbar({message:'已清空'}); }
+let zip = null;
+let globalObjectURLs = new Set(); // track created object URLs for release
+let playingContext = { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
 
-function handleFiles(files){ const arr = Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.ncm')); if (arr.length===0){ mdui.snackbar({message:'未检测到 .ncm 文件'}); return; } if (!zip) zip = new JSZip(); arr.forEach(f=>processOne(f)); }
+// drag/drop handlers
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
+drop.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+clearBtn.addEventListener('click', clearAll);
+zipBtn.addEventListener('click', async ()=>{ if (!zip) return; const blob = await zip.generateAsync({type:'blob'}); saveAs(blob, `ncm_exports_${Date.now()}.zip`); });
+releaseBtn.addEventListener('click', releaseMemory);
 
-function createRow(){ const row = document.createElement('div'); row.className='rowItem item'; row.innerHTML = `
-  <div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div>
-  <div>
-    <div class="title">解析中…</div>
-    <div class="meta">文件：<span class="small muted filename"></span></div>
-    <div style="margin-top:8px" class="progress" hidden><i style="width:0%"></i></div>
-  </div>
-  <div class="muted small format">--</div>
-  <div class="muted small duration">--:--</div>
-  <div style="text-align:right" class="rightAction">
-    <button class="btn outline preview" disabled>播放</button>
-    <button class="btn download" disabled>下载</button>
-    <button class="btn outline coverDl" disabled>下载封面</button>
-  </div>
-`;
-  list.appendChild(row); return row; }
+// modal elements
+const modal = document.getElementById('modal');
+const disc = document.getElementById('disc');
+const discImg = document.getElementById('discImg');
+const playerTitle = document.getElementById('playerTitle');
+const playerSub = document.getElementById('playerSub');
+const curTimeEl = document.getElementById('curTime');
+const durTimeEl = document.getElementById('durTime');
+const progressBar = document.getElementById('playerProgressBar');
+const progressFill = document.getElementById('playerProgressFill');
+const btnPlay = document.getElementById('btnPlay');
+const btnStop = document.getElementById('btnStop');
+const btnClose = document.getElementById('btnClose');
+const btnDownloadCover = document.getElementById('btnDownloadCover');
+const iconPlaySvg = document.getElementById('iconPlay');
+const iconPauseSvg = document.getElementById('iconPause');
 
-function setProgress(row,p){ const bar = row.querySelector('.progress'); const inner = bar?.querySelector('i'); if (!bar) return; bar.hidden=false; inner.style.width = Math.min(100,Math.max(0,p))+'%'; if (p>=100) setTimeout(()=>bar.hidden=true,300); }
+// progress seeking (pointer down -> track move -> up)
+let isSeeking = false;
+function computePctFromEvent(e, el){
+  const rect = el.getBoundingClientRect();
+  let x = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX);
+  let pct = (x - rect.left) / rect.width;
+  return Math.min(1, Math.max(0, pct));
+}
+progressBar.addEventListener('pointerdown', (e)=>{
+  if (!playingContext.audio) return;
+  isSeeking = true;
+  progressBar.setPointerCapture(e.pointerId);
+  const pct = computePctFromEvent(e, progressBar);
+  seekToPct(pct);
+});
+progressBar.addEventListener('pointermove', (e)=>{
+  if (!isSeeking) return;
+  const pct = computePctFromEvent(e, progressBar);
+  seekToPct(pct);
+});
+progressBar.addEventListener('pointerup', (e)=>{
+  if (!isSeeking) return;
+  isSeeking = false;
+  try{ progressBar.releasePointerCapture(e.pointerId); }catch(e){}
+});
+progressBar.addEventListener('click', (e)=>{ if (!playingContext.audio) return; const pct = computePctFromEvent(e, progressBar); seekToPct(pct); });
 
-async function processOne(file){ const row = createRow(); row.querySelector('.filename').textContent = file.name; try{ const ab = await file.arrayBuffer(); const data = new Uint8Array(ab); setProgress(row,5); const out = ncmDecrypt(data, p=>setProgress(row,p*0.9+5)); setProgress(row,90);
-    // cover
-    if (out.cover && out.cover.length>8){ const mime = detectImageMime(out.cover); try{ const b = new Blob([out.cover], {type:mime}); const url = URL.createObjectURL(b); objectURLs.push(url); const img = row.querySelector('.cover'); img.src = url; img.style.opacity=1; // store blob
-        row.__coverBlob = b; }catch(e){console.warn(e)} }
-    // meta
-    const title = out.meta?.musicName || file.name.replace(/\.ncm$/i,''); const artist = (out.meta?.artist || []).map(a=>a[0]).join(', ') || out.meta?.artistName || ''; const album = out.meta?.album || out.meta?.albumName || '';
-    row.querySelector('.title').textContent = title + (artist?(' — '+artist):''); if (album) row.querySelector('.meta').textContent = '专辑：'+album;
-    // audio blob
-    const ext = (out.ext && out.ext.toLowerCase()) || (out.mime && out.mime.includes('flac')?'flac':'mp3'); const mime = out.mime || (ext==='flac'?'audio/flac':'audio/mpeg'); const audioBlob = new Blob([out.audio], {type:mime}); const audioUrl = URL.createObjectURL(audioBlob); objectURLs.push(audioUrl);
-    const audio = new Audio(); audio.preload='metadata'; audio.src = audioUrl; audio.addEventListener('loadedmetadata', ()=>{ const d = audio.duration; row.querySelector('.duration').textContent = isFinite(d)?formatTime(d):'--:--'; });
-    row.querySelector('.format').textContent = ext.toUpperCase(); const previewBtn = row.querySelector('.preview'); const downloadBtn = row.querySelector('.download'); const coverDl = row.querySelector('.coverDl'); previewBtn.disabled=false; downloadBtn.disabled=false; coverDl.disabled = !(row.__coverBlob);
-    // play: open modal and play this audio
-    previewBtn.addEventListener('click', ()=>{ openPlayer({title, artist, album, audioBlob, coverBlob: row.__coverBlob}); });
-    downloadBtn.addEventListener('click', ()=> saveAs(audioBlob, sanitize(`${title} - ${artist || 'unknown'}.${ext}`)));
-    coverDl.addEventListener('click', ()=>{ if (!row.__coverBlob) return; const cext = (detectImageMime(new Uint8Array(row.__coverBlob.slice(0,4)))==='image/png')?'.png':'.jpg'; saveAs(row.__coverBlob, sanitize(`${title} - ${artist || 'unknown'}${cext}`)); });
-    // zip
-    if (!zip) zip = new JSZip(); zip.file(sanitize(`${title} - ${artist || 'unknown'}.${ext}`), audioBlob); zipBtn.disabled=false;
-    setProgress(row,100);
-  }catch(err){ console.error(err); row.querySelector('.title').textContent = '解密失败：'+(err.message||err); setProgress(row,100); } }
-
-function openPlayer({title, artist, album, audioBlob, coverBlob}){
-  // cleanup previous
-  cleanupPlayer();
-  // set UI
-  playerTitle.textContent = title; playerSub.textContent = (artist?artist: (album?album:''));
-  // cover
-  if (coverBlob){ const url = URL.createObjectURL(coverBlob); discImg.src = url; disc.classList.add('rotating'); objectURLs.push(url); currentCoverBlob = coverBlob; } else { discImg.src = ''; currentCoverBlob = null; }
-  // audio element
-  const url = URL.createObjectURL(audioBlob); objectURLs.push(url); const audio = new Audio(); audio.src = url; audio.preload='metadata'; currentAudio = audio;
-  audio.addEventListener('timeupdate', ()=>{ const pct = (audio.currentTime / (audio.duration || 1)) * 100; playerProgress.style.width = Math.min(100, Math.max(0, pct)) + '%'; });
-  audio.addEventListener('ended', ()=>{ playerPlay.style.display='inline-block'; playerPause.style.display='none'; disc.classList.remove('rotating'); });
-  playerPlay.onclick = ()=>{ audio.play(); playerPlay.style.display='none'; playerPause.style.display='inline-block'; disc.classList.add('rotating'); };
-  playerPause.onclick = ()=>{ audio.pause(); playerPlay.style.display='inline-block'; playerPause.style.display='none'; disc.classList.remove('rotating'); };
-  playerDownloadCover.onclick = ()=>{ if (!currentCoverBlob) return; const ext = detectImageMime(new Uint8Array(currentCoverBlob.slice(0,4)))==='image/png'?'.png':'.jpg'; saveAs(currentCoverBlob, sanitize(`${title} - ${artist || 'unknown'}${ext}`)); };
-  playerClose.onclick = ()=>{ closePlayer(); };
-  // show modal and auto play
-  modal.style.display='flex'; setTimeout(()=>{ audio.play().catch(()=>{}); playerPlay.style.display='none'; playerPause.style.display='inline-block'; disc.classList.add('rotating'); }, 160);
+function seekToPct(pct){
+  const audio = playingContext.audio;
+  if (!audio || !isFinite(audio.duration) || audio.duration <= 0) return;
+  audio.currentTime = pct * audio.duration;
+  updateProgressUI(audio);
 }
 
-function cleanupPlayer(){ if (currentAudio){ try{ currentAudio.pause(); currentAudio.src=''; }catch(e){} currentAudio=null; } // remove disc rotation
-  disc.classList.remove('rotating'); playerProgress.style.width='0%'; playerPlay.style.display='inline-block'; playerPause.style.display='none'; }
+// RAF-driven rotation to preserve angle on pause
+function startDiscRotation(){
+  if (playingContext.raf) return;
+  playingContext.lastTs = performance.now();
+  function step(ts){
+    const audio = playingContext.audio;
+    if (!playingContext.playing || !audio) return; // stop raf if not playing
+    const dt = (ts - playingContext.lastTs) / 1000;
+    playingContext.lastTs = ts;
+    // rotation speed: 360deg per 6 seconds => 60 deg/s (tune as desired)
+    const speed = 60; // deg per second
+    playingContext.angle = (playingContext.angle + speed * dt) % 360;
+    discImg.style.transform = `rotate(${playingContext.angle}deg)`;
+    // progress update from audio
+    updateProgressUI(audio);
+    playingContext.raf = requestAnimationFrame(step);
+  }
+  playingContext.raf = requestAnimationFrame(step);
+}
+function stopDiscRotation(){
+  if (playingContext.raf){ cancelAnimationFrame(playingContext.raf); playingContext.raf = null; }
+  // leave angle as-is (discImg.transform already set), so when resumed, RAF will continue adding from this.angle
+}
 
-function closePlayer(){ if (currentAudio){ try{ currentAudio.pause(); currentAudio.src=''; }catch(e){} currentAudio=null; } // revoke any object URLs created for player (cover + audio)
-  if (objectURLs && objectURLs.length){ objectURLs.forEach(u=>{ try{ URL.revokeObjectURL(u); }catch(e){} }); objectURLs = []; }
-  modal.style.display='none'; cleanupPlayer(); }
+// update progress UI using audio
+function updateProgressUI(audio){
+  if (!audio) return;
+  const dur = isFinite(audio.duration) ? audio.duration : 0;
+  const cur = isFinite(audio.currentTime) ? audio.currentTime : 0;
+  const pct = dur>0 ? (cur / dur)*100 : 0;
+  progressFill.style.width = Math.min(100, Math.max(0, pct)) + '%';
+  curTimeEl.textContent = formatTime(cur);
+  durTimeEl.textContent = formatTime(dur);
+}
 
-function detectImageMime(bytes){ if (!bytes || bytes.length<4) return 'application/octet-stream'; if (bytes[0]===0xFF && bytes[1]===0xD8 && bytes[2]===0xFF) return 'image/jpeg'; if (bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47) return 'image/png'; if (bytes[0]===0x47 && bytes[1]===0x49) return 'image/gif'; return 'application/octet-stream'; }
-function formatTime(s){ if (!isFinite(s)) return '--:--'; const m=Math.floor(s/60); const sec=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; }
-function sanitize(s){ return String(s||'').replace(/[\\\\/:*?"<>|]/g,'_').replace(/\\s+/g,' ').trim(); }
+// player control handlers
+btnPlay.addEventListener('click', ()=>{
+  const audio = playingContext.audio;
+  if (!audio) return;
+  audio.play().then(()=>{
+    playingContext.playing = true;
+    startDiscRotation();
+    iconPlaySvg.style.display = 'none';
+    iconPauseSvg.style.display = 'inline';
+  }).catch(()=>{});
+});
+btnStop.addEventListener('click', ()=>{
+  if (!playingContext.audio) return;
+  playingContext.audio.pause();
+  playingContext.audio.currentTime = 0;
+  playingContext.playing = false;
+  stopDiscRotation();
+  iconPlaySvg.style.display = 'inline';
+  iconPauseSvg.style.display = 'none';
+  updateProgressUI(playingContext.audio);
+});
+btnClose.addEventListener('click', ()=>{
+  closePlayer();
+});
 
-// ---------- NCM 解密核心 ----------
+// open player with audio blob and cover
+function openPlayer({title, artist, album, audioBlob, coverBlob}){
+  // cleanup any previous
+  cleanupPlayerContext();
+
+  playerTitle.textContent = title || '未知';
+  playerSub.textContent = artist || album || '';
+
+  // cover
+  if (coverBlob){
+    const coverUrl = URL.createObjectURL(coverBlob);
+    globalObjectURLs.add(coverUrl);
+    playingContext.coverUrl = coverUrl;
+    playingContext.coverBlob = coverBlob;
+    discImg.src = coverUrl;
+  } else {
+    discImg.src = '';
+    playingContext.coverBlob = null;
+  }
+
+  // audio
+  const audioUrl = URL.createObjectURL(audioBlob);
+  globalObjectURLs.add(audioUrl);
+  playingContext.audioUrl = audioUrl;
+  const audio = new Audio();
+  audio.src = audioUrl;
+  audio.preload = 'metadata';
+  playingContext.audio = audio;
+  playingContext.angle = playingContext.angle || 0;
+  playingContext.playing = false;
+
+  // wire events
+  audio.addEventListener('loadedmetadata', ()=>{ updateProgressUI(audio); });
+  audio.addEventListener('timeupdate', ()=>{ updateProgressUI(audio); });
+  audio.addEventListener('ended', ()=>{ playingContext.playing = false; stopDiscRotation(); iconPlaySvg.style.display = 'inline'; iconPauseSvg.style.display = 'none'; });
+
+  // play immediately (try)
+  modal.style.display = 'flex';
+  // small delay for UX
+  setTimeout(()=> {
+    audio.play().then(()=> {
+      playingContext.playing = true;
+      iconPlaySvg.style.display = 'none';
+      iconPauseSvg.style.display = 'inline';
+      // start RAF rotation loop
+      startDiscRotation();
+    }).catch(()=> {
+      // autoplay might be blocked; show play button as fallback
+      playingContext.playing = false;
+      iconPlaySvg.style.display = 'inline';
+      iconPauseSvg.style.display = 'none';
+    });
+  }, 140);
+}
+
+// when closing, completely stop and revoke object URLs created for the player
+function closePlayer(){
+  const audio = playingContext.audio;
+  if (audio){
+    try { audio.pause(); audio.src = ''; audio.removeAttribute('src'); } catch(e){}
+  }
+  playingContext.audio = null;
+  playingContext.playing = false;
+  stopDiscRotation();
+  // revoke player specific object URLs
+  if (playingContext.audioUrl){ try { URL.revokeObjectURL(playingContext.audioUrl); globalObjectURLs.delete(playingContext.audioUrl); } catch(e){} playingContext.audioUrl = null; }
+  if (playingContext.coverUrl){ try { URL.revokeObjectURL(playingContext.coverUrl); globalObjectURLs.delete(playingContext.coverUrl); } catch(e){} playingContext.coverUrl = null; playingContext.coverBlob = null; }
+  // hide modal
+  modal.style.display = 'none';
+  // reset UI
+  progressFill.style.width = '0%';
+  curTimeEl.textContent = '0:00';
+  durTimeEl.textContent = '0:00';
+  iconPlaySvg.style.display = 'inline';
+  iconPauseSvg.style.display = 'none';
+}
+
+// cleanup context (stop current audio but don't revoke global URLs)
+function cleanupPlayerContext(){
+  if (playingContext.audio){
+    try{ playingContext.audio.pause(); playingContext.audio.src = ''; }catch(e){}
+    playingContext.audio = null;
+  }
+  stopDiscRotation();
+}
+
+// release memory: revoke all tracked URLs and clear references
+function releaseMemory(){
+  // stop and clear player
+  cleanupPlayerContext();
+  // revoke every object URL created & clear list references (audio blobs may still exist in closures but we'd null them)
+  globalObjectURLs.forEach(url => {
+    try { URL.revokeObjectURL(url); } catch(e) {}
+  });
+  globalObjectURLs.clear();
+
+  // additionally clear list rows and remove stored blobs on row elements
+  document.querySelectorAll('.row.item').forEach(row => {
+    if (row.__audioUrl){ try{ URL.revokeObjectURL(row.__audioUrl); }catch(e){} row.__audioUrl = null; }
+    if (row.__coverUrl){ try{ URL.revokeObjectURL(row.__coverUrl); }catch(e){} row.__coverUrl = null; }
+    row.__coverBlob = null;
+    row.__audioBlob = null;
+  });
+
+  mdui.snackbar({message:'已释放内存（已撤销所有临时对象 URL）'});
+}
+
+// helper format time
+function formatTime(s){
+  if (!isFinite(s) || s <= 0) return '0:00';
+  const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0');
+  return `${m}:${sec}`;
+}
+
+// --- file handling and NCM decryption (same algorithm as before) ---
+// for brevity, the same ncmDecrypt implementation is included here (unmodified logic)
+function handleFiles(files){
+  const arr = Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.ncm'));
+  if (arr.length === 0){ mdui.snackbar({message:'未检测到 .ncm 文件'}); return; }
+  if (!zip) zip = new JSZip();
+  arr.forEach(f=> processOne(f));
+}
+
+function createRow(){
+  const row = document.createElement('div');
+  row.className = 'row item';
+  row.innerHTML = `
+    <div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div>
+    <div>
+      <div class="titleStrong">解析中…</div>
+      <div class="meta small">文件：<span class="filename"></span></div>
+      <div style="margin-top:8px" class="rowProgress" hidden><i style="width:0%"></i></div>
+    </div>
+    <div class="small format">--</div>
+    <div class="small duration">--:--</div>
+    <div style="text-align:right" class="rightActions">
+      <button class="iconBtn preview" disabled title="播放">▶</button>
+      <button class="iconBtn download" disabled title="下载">⬇</button>
+      <button class="iconBtn coverDl" disabled title="下载封面">🖼</button>
+    </div>
+  `;
+  list.appendChild(row);
+  return row;
+}
+
+function setRowProgress(row, pct){ const bar = row.querySelector('.rowProgress'); const inner = bar?.querySelector('i'); if (!bar) return; bar.hidden=false; inner.style.width = Math.min(100,Math.max(0,pct))+'%'; if (pct>=100) setTimeout(()=>bar.hidden=true,300); }
+
+async function processOne(file){
+  const row = createRow();
+  row.querySelector('.filename').textContent = file.name;
+  try {
+    const ab = await file.arrayBuffer();
+    const data = new Uint8Array(ab);
+    setRowProgress(row, 5);
+    const out = ncmDecrypt(data, p => setRowProgress(row, p*0.9 + 5));
+    setRowProgress(row, 90);
+
+    // cover
+    if (out.cover && out.cover.length > 8){
+      const mime = detectImageMime(out.cover);
+      const coverBlob = new Blob([out.cover], {type: mime});
+      const coverUrl = URL.createObjectURL(coverBlob);
+      globalObjectURLs.add(coverUrl);
+      const img = row.querySelector('.cover'); img.src = coverUrl; img.style.opacity = 1;
+      row.__coverBlob = coverBlob;
+      row.__coverUrl = coverUrl;
+    }
+
+    // meta
+    const title = (out.meta && out.meta.musicName) ? out.meta.musicName : file.name.replace(/\.ncm$/i,'');
+    const artist = (out.meta && out.meta.artist)? out.meta.artist.map(a=>a[0]).join(', ') : (out.meta && out.meta.artistName) ? out.meta.artistName : '';
+    const album = (out.meta && (out.meta.album || out.meta.albumName)) ? (out.meta.album || out.meta.albumName) : '';
+    row.querySelector('.titleStrong').textContent = title + (artist ? (' — ' + artist) : '');
+    if (album) row.querySelector('.meta').textContent = '专辑：' + album;
+
+    // audio blob
+    const ext = (out.ext && out.ext.toLowerCase()) || (out.mime && out.mime.includes('flac') ? 'flac' : 'mp3');
+    const mime = out.mime || (ext==='flac' ? 'audio/flac' : 'audio/mpeg');
+    const audioBlob = new Blob([out.audio], {type: mime});
+    const audioUrl = URL.createObjectURL(audioBlob);
+    globalObjectURLs.add(audioUrl);
+    row.__audioBlob = audioBlob;
+    row.__audioUrl = audioUrl;
+
+    // duration via Audio
+    const audioTmp = new Audio(); audioTmp.preload='metadata'; audioTmp.src = audioUrl;
+    audioTmp.addEventListener('loadedmetadata', ()=>{ const d = audioTmp.duration; row.querySelector('.duration').textContent = isFinite(d) ? formatTime(d) : '--:--'; audioTmp.src=''; });
+
+    // enable buttons
+    const previewBtn = row.querySelector('.preview');
+    const dlBtn = row.querySelector('.download');
+    const coverDl = row.querySelector('.coverDl');
+    previewBtn.disabled = false; dlBtn.disabled = false; coverDl.disabled = !row.__coverBlob;
+
+    previewBtn.addEventListener('click', ()=> {
+      openPlayer({ title, artist, album, audioBlob, coverBlob: row.__coverBlob });
+    });
+
+    dlBtn.addEventListener('click', ()=> saveAs(audioBlob, sanitize(`${title} - ${artist || 'unknown'}.${ext}`)));
+    coverDl.addEventListener('click', ()=> { if (!row.__coverBlob) return; const extn = detectImageMime(new Uint8Array(row.__coverBlob.slice(0,4))) === 'image/png' ? '.png' : '.jpg'; saveAs(row.__coverBlob, sanitize(`${title} - ${artist || 'unknown'}${extn}`)); });
+
+    // add to zip
+    if (!zip) zip = new JSZip();
+    zip.file(sanitize(`${title} - ${artist || 'unknown'}.${ext}`), audioBlob);
+    zipBtn.disabled = false;
+
+    setRowProgress(row, 100);
+  } catch(err) {
+    console.error(err);
+    row.querySelector('.titleStrong').textContent = '解密失败：' + (err.message || err);
+    setRowProgress(row, 100);
+  }
+}
+
+// release utility helpers
+function detectImageMime(bytes){
+  if (!bytes || bytes.length < 4) return 'application/octet-stream';
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg';
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
+  if (bytes[0] === 0x47 && bytes[1] === 0x49) return 'image/gif';
+  return 'application/octet-stream';
+}
+function sanitize(s){ return String(s||'').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,' ').trim(); }
+
+// ---------------- NCM 解密核心 (与之前一致) ----------------
 function ncmDecrypt(data, onProgress){
   const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
   const MAGIC = 'CTENFDAM';
-  const sig = String.fromCharCode(...data.slice(0,8)); if (sig !== MAGIC) throw new Error('不是有效的 NCM 文件（缺少 CTENFDAM）');
-  let off = 8 + 2; const keyLen = dv.getUint32(off, true); off += 4; let keyData = data.slice(off, off+keyLen); off += keyLen; for (let i=0;i<keyData.length;i++) keyData[i] ^= 0x64;
-  const rc4Seed = aesEcbDecrypt(keyData, CORE_KEY); const seed = rc4Seed.slice(17); const keyBox = initKeyBox(seed);
-  const metaLen = dv.getUint32(off, true); off += 4; let metaRaw = data.slice(off, off+metaLen); off += metaLen; for (let i=0;i<metaRaw.length;i++) metaRaw[i] ^= 0x63;
-  const prefix = "163 key(Don't modify):"; let metaStr = new TextDecoder().decode(metaRaw); metaStr = metaStr.slice(prefix.length);
-  const metaBytes = Uint8Array.from(atob(metaStr), c=>c.charCodeAt(0)); const metaDec = aesEcbDecrypt(metaBytes, META_KEY);
-  const jsonStr = new TextDecoder().decode(metaDec).replace(/^music:/,''); let meta = {}; try{ meta = JSON.parse(jsonStr); }catch(e){ meta = {}; }
-  off += 4 + 5; const imgSize = dv.getUint32(off, true); off += 4; const cover = data.slice(off, off+imgSize); off += imgSize; const audioEnc = data.slice(off);
-  const audio = audioDec(audioEnc, keyBox, onProgress); const ext = (meta.format && meta.format.toLowerCase()) || guessExt(audio); const mime = ext === 'flac' ? 'audio/flac' : 'audio/mpeg'; return { audio, meta, cover, mime, ext };
+  const sig = String.fromCharCode(...data.slice(0,8));
+  if (sig !== MAGIC) throw new Error('不是有效的 NCM 文件（缺少 CTENFDAM）');
+  let off = 8 + 2;
+  const keyLen = dv.getUint32(off, true); off += 4;
+  let keyData = data.slice(off, off+keyLen); off += keyLen;
+  for (let i=0;i<keyData.length;i++) keyData[i] ^= 0x64;
+  const rc4Seed = aesEcbDecrypt(keyData, CORE_KEY);
+  const seed = rc4Seed.slice(17);
+  const keyBox = initKeyBox(seed);
+  const metaLen = dv.getUint32(off, true); off += 4;
+  let metaRaw = data.slice(off, off+metaLen); off += metaLen;
+  for (let i=0;i<metaRaw.length;i++) metaRaw[i] ^= 0x63;
+  const prefix = "163 key(Don't modify):";
+  let metaStr = new TextDecoder().decode(metaRaw);
+  metaStr = metaStr.slice(prefix.length);
+  const metaBytes = Uint8Array.from(atob(metaStr), c=>c.charCodeAt(0));
+  const metaDec = aesEcbDecrypt(metaBytes, META_KEY);
+  const jsonStr = new TextDecoder().decode(metaDec).replace(/^music:/,'');
+  let meta = {};
+  try{ meta = JSON.parse(jsonStr); }catch(e){ meta = {}; }
+  off += 4 + 5;
+  const imgSize = dv.getUint32(off, true); off += 4;
+  const cover = data.slice(off, off+imgSize); off += imgSize;
+  const audioEnc = data.slice(off);
+  const audio = audioDec(audioEnc, keyBox, onProgress);
+  const ext = (meta.format && meta.format.toLowerCase()) || guessExt(audio);
+  const mime = ext === 'flac' ? 'audio/flac' : 'audio/mpeg';
+  return { audio, meta, cover, mime, ext };
 }
-function aesEcbDecrypt(bytes, key){ const wa = CryptoJS.lib.WordArray.create(bytes); const dec = CryptoJS.AES.decrypt({ciphertext: wa}, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 }); const out = new Uint8Array(dec.sigBytes); const words = dec.words; for (let i=0;i<out.length;i++){ const w = words[Math.floor(i/4)]; const shift = 24 - 8*(i%4); out[i] = (w >>> shift) & 0xff; } return out; }
-function initKeyBox(seed){ const box = new Uint8Array(256); for (let i=0;i<256;i++) box[i]=i; let last=0, idx=0; for (let i=0;i<256;i++){ last = (box[i] + last + seed[idx]) & 0xff; [box[i], box[last]] = [box[last], box[i]]; idx = (idx + 1) % seed.length; } return box; }
-function audioDec(enc, box, onProgress){ const out = new Uint8Array(enc.length); const CHUNK = 0x8000; for (let i=0;i<enc.length;i++){ const j = (i+1) & 0xff; out[i] = enc[i] ^ box[(box[j] + box[(box[j] + j) & 0xff]) & 0xff]; if (onProgress && (i%CHUNK===0)) onProgress(i/enc.length*100); } if (onProgress) onProgress(100); return out; }
-function guessExt(bytes){ if (bytes[0]===0x66 && bytes[1]===0x4C && bytes[2]===0x61 && bytes[3]===0x43) return 'flac'; if (bytes[0]===0xFF && (bytes[1]&0xE0)===0xE0) return 'mp3'; return 'mp3'; }
+function aesEcbDecrypt(bytes, key){
+  const wa = CryptoJS.lib.WordArray.create(bytes);
+  const dec = CryptoJS.AES.decrypt({ciphertext: wa}, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
+  const out = new Uint8Array(dec.sigBytes);
+  const words = dec.words;
+  for (let i=0;i<out.length;i++){
+    const w = words[Math.floor(i/4)];
+    const shift = 24 - 8*(i%4);
+    out[i] = (w >>> shift) & 0xff;
+  }
+  return out;
+}
+function initKeyBox(seed){
+  const box = new Uint8Array(256);
+  for (let i=0;i<256;i++) box[i]=i;
+  let last=0, idx=0;
+  for (let i=0;i<256;i++){
+    last = (box[i] + last + seed[idx]) & 0xff;
+    [box[i], box[last]] = [box[last], box[i]];
+    idx = (idx + 1) % seed.length;
+  }
+  return box;
+}
+function audioDec(enc, box, onProgress){
+  const out = new Uint8Array(enc.length);
+  const CHUNK = 0x8000;
+  for (let i=0;i<enc.length;i++){
+    const j = (i+1) & 0xff;
+    out[i] = enc[i] ^ box[(box[j] + box[(box[j] + j) & 0xff]) & 0xff];
+    if (onProgress && (i%CHUNK===0)) onProgress(i/enc.length*100);
+  }
+  if (onProgress) onProgress(100);
+  return out;
+}
+function guessExt(bytes){
+  if (bytes[0]===0x66 && bytes[1]===0x4C && bytes[2]===0x61 && bytes[3]===0x43) return 'flac';
+  if (bytes[0]===0xFF && (bytes[1]&0xE0)===0xE0) return 'mp3';
+  return 'mp3';
+}
 </script>
 </body>
 </html>
