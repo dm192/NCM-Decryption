@@ -120,7 +120,13 @@ html,body{
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .title{font-size:20px;margin:0}
 .subtitle{color:var(--muted);font-size:13px}
-.controls{display:flex;gap:8px;align-items:center}
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
 .btn{
   padding:8px 12px;border-radius:10px;border:none;
     background:var(--btn-bg); color:var(--btn-fg-on-accent); cursor:pointer;
@@ -503,43 +509,4 @@ input[type="checkbox"]:focus-visible {
 }
 
 @media (max-width:600px) {
-  .wrap { margin: 14px auto; padding: 12px; }
-  .controls {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .btn, .btn.outline {
-    flex: 1;
-    min-width: 80px;
-    font-size: 13px;
-    padding: 6px 10px;
-  }
-  .modal {
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
-    padding: 14px;
-  }
-  .playerInfo {
-    width: 100%;
-  }
-  .disc {
-    width: 100px;
-    height: 100px;
-  }
-  .announceBox {
-    padding: 14px;
-    width: min(94vw, 100%);
-  }
-  .row {
-    grid-template-columns: 48px 1fr auto;
-    font-size: 13px;
-  }
-  .row .format,
-  .row .duration {
-    display: none;
-  }
-  .header {
-    display: none;
-  }
-}
+  .wrap { margin: 14px auto; padding: 

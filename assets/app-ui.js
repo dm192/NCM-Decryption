@@ -306,12 +306,35 @@
       bindEvents();
       checkWindowSize();
       // theme
-      try{
-        const saved = localStorage.getItem('ncm_theme_pref') || 'auto';
-        if (refs.themeSelect) refs.themeSelect.value = saved;
-        if (refs.themeSelect) refs.themeSelect.addEventListener('change', (e)=>{ localStorage.setItem('ncm_theme_pref', e.target.value); applyTheme(e.target.value); });
-        applyTheme(localStorage.getItem('ncm_theme_pref') || 'auto');
-      }catch(e){}
+      // 移除主题切换功能
+      // const themeToggleBtn = document.getElementById('themeToggleBtn');
+      // const lightThemeCss = document.getElementById('gh-markdown-light');
+      // const darkThemeCss = document.getElementById('gh-markdown-dark');
+      //
+      // function setTheme(isDark) {
+      //   document.documentElement.classList.toggle('dark', isDark);
+      //   lightThemeCss.disabled = isDark;
+      //   darkThemeCss.disabled = !isDark;
+      //   localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      // }
+      //
+      // themeToggleBtn.addEventListener('click', () => {
+      //   setTheme(!document.documentElement.classList.contains('dark'));
+      // });
+      //
+      // // 初始化主题
+      // const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // const savedTheme = localStorage.getItem('theme');
+      // setTheme(savedTheme === 'dark' || (savedTheme === null && prefersDark));
+      
+      // 统一使用暗色主题
+      document.documentElement.classList.add('dark');
+      if (document.getElementById('gh-markdown-light')) {
+        document.getElementById('gh-markdown-light').disabled = true;
+      }
+      if (document.getElementById('gh-markdown-dark')) {
+        document.getElementById('gh-markdown-dark').disabled = false;
+      }
       // announcement
       fetchAndShowAnnouncement().catch(()=>{});
       console.log('[NCM] UI initialized');
@@ -319,14 +342,6 @@
       console.error('初始化 UI 时出错', e);
       try { showErrorModal(e); } catch(err2){ console.error('显示错误模态失败', err2); }
     }
-  }
-
-  function applyTheme(pref){
-    const ghLight = document.getElementById('gh-markdown-light');
-    const ghDark = document.getElementById('gh-markdown-dark');
-    if (pref === 'auto'){ const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches; document.body.classList.toggle('theme-dark', systemDark); document.body.classList.toggle('theme-light', !systemDark); if (ghLight && ghDark){ ghLight.disabled = systemDark; ghDark.disabled = !systemDark; } }
-    else if (pref === 'light'){ document.body.classList.add('theme-light'); document.body.classList.remove('theme-dark'); if (ghLight && ghDark){ ghLight.disabled = false; ghDark.disabled = true; } }
-    else { document.body.classList.add('theme-dark'); document.body.classList.remove('theme-light'); if (ghLight && ghDark){ ghLight.disabled = true; ghDark.disabled = false; } }
   }
 
   // 不要覆盖整个 window.NCM_UI，逐个注册方法以保留其它模块导出的函数
