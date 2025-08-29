@@ -5,8 +5,12 @@
 
   let refs = {};
   let zip = null;
-  const globalObjectURLs = new Set();
-  const playingContext = { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
+  // 使用共享命名空间以便拆分模块时复用状态
+  window.NCM_UI = window.NCM_UI || {};
+  window.NCM_UI.globalObjectURLs = window.NCM_UI.globalObjectURLs || new Set();
+  window.NCM_UI.playingContext = window.NCM_UI.playingContext || { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
+  const globalObjectURLs = window.NCM_UI.globalObjectURLs;
+  const playingContext = window.NCM_UI.playingContext;
   const MIN_WIDTH = 600, MIN_HEIGHT = 520;
   const ANNOUNCEMENT_URL = 'https://cdn-cf.dormant.top/ncm/announcement.md';
   const ANNOUNCE_HIDE_KEY = 'ncm_announce_hide_until';
@@ -15,6 +19,8 @@
   function _findModalInner(el){ if (!el) return null; return el.querySelector('[data-modal-inner]') || el.querySelector('.modal') || el.querySelector('.announceBox'); }
   function showModal(el){
     if (!el) return;
+    // cancel any pending hide for this modal
+    if (el.__hideTimer) { clearTimeout(el.__hideTimer); el.__hideTimer = null; }
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     el.style.display = 'flex';
@@ -30,11 +36,18 @@
     const inner = _findModalInner(el);
     if (inner) inner.classList.remove('open');
     if (el.id === 'sizeWarning') el.classList.remove('open');
-    setTimeout(()=>{
+    // schedule hide after animation; store timer so it can be cancelled by showModal
+    if (el.__hideTimer) clearTimeout(el.__hideTimer);
+    el.__hideTimer = setTimeout(()=>{
+      // if modal was reopened meanwhile (has .open), skip hiding
+      const innerNow = _findModalInner(el);
+      const isOpen = (innerNow && innerNow.classList.contains('open')) || el.classList.contains('open');
+      if (isOpen) { el.__hideTimer = null; return; }
       el.style.display = 'none';
       el.setAttribute('aria-hidden','true');
       document.documentElement.style.overflow = '';
       document.body.style.overflow = '';
+      el.__hideTimer = null;
     }, 260);
   }
   function attachMaskCloseBehavior(maskEl, onMaskClose){
@@ -91,6 +104,8 @@
       errorReport: document.getElementById('errorReport'),
       errorClose: document.getElementById('errorClose'),
     };
+  // 供其他模块访问 refs
+  window.NCM_UI._refs = refs;
   }
 
   /* size check */
@@ -101,29 +116,9 @@
     return ok;
   }
 
-  /* player helpers */
+  /* player helpers moved to assets/ui/player.js for modularity */
+  // 保留 seeking 状态用于 progress 交互
   let seeking = false;
-  function computePctFromEvent(e, el){ const rect = el.getBoundingClientRect(); const x = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX); return Math.min(1, Math.max(0, (x - rect.left) / rect.width)); }
-  function updateProgressUI(){ const audio = playingContext.audio; if (!audio){ if (refs.playerFill) refs.playerFill.style.width='0%'; if (refs.curTime) refs.curTime.textContent='0:00'; if (refs.durTime) refs.durTime.textContent='0:00'; return; } const dur = isFinite(audio.duration)?audio.duration:0; const cur = isFinite(audio.currentTime)?audio.currentTime:0; const pct = dur>0?(cur/dur)*100:0; if (refs.playerFill) refs.playerFill.style.width=Math.min(100,Math.max(0,pct))+'%'; if (refs.curTime) refs.curTime.textContent = CORE.formatTime(cur); if (refs.durTime) refs.durTime.textContent = CORE.formatTime(dur); }
-  function startDiscLoop(){ if (playingContext.raf) return; playingContext.lastTs = performance.now(); function step(ts){ if (!playingContext.playing || !playingContext.audio){ playingContext.raf=null; return; } const dt=(ts-playingContext.lastTs)/1000; playingContext.lastTs=ts; const speed=60; playingContext.angle=(playingContext.angle+speed*dt)%360; if (refs.discImg) refs.discImg.style.transform=`rotate(${playingContext.angle}deg)`; updateProgressUI(); playingContext.raf = requestAnimationFrame(step);} playingContext.raf = requestAnimationFrame(step); }
-  function stopDiscLoop(){ if (playingContext.raf){ cancelAnimationFrame(playingContext.raf); playingContext.raf=null; } }
-  function seekToPct(pct){ const audio = playingContext.audio; if (!audio || !isFinite(audio.duration) || audio.duration<=0) return; audio.currentTime = pct*audio.duration; updateProgressUI(); }
-
-  function cleanupPlayer(){ if (playingContext.audio){ try{ playingContext.audio.pause(); playingContext.audio.src=''; }catch(e){} playingContext.audio=null; } stopDiscLoop(); }
-  function openPlayer({title, artist, album, audioBlob, coverBlob}){
-    cleanupPlayer();
-    if (refs.playerTitle) refs.playerTitle.textContent = title || '未知';
-    if (refs.playerSub) refs.playerSub.textContent = artist || album || '';
-    if (coverBlob && refs.discImg){ const coverUrl = URL.createObjectURL(coverBlob); globalObjectURLs.add(coverUrl); playingContext.coverUrl = coverUrl; playingContext.coverBlob = coverBlob; refs.discImg.src = coverUrl; } else { if (refs.discImg) refs.discImg.src=''; playingContext.coverBlob=null; }
-    const audioUrl = URL.createObjectURL(audioBlob); globalObjectURLs.add(audioUrl); playingContext.audioUrl = audioUrl;
-    const audio = new Audio(); audio.src = audioUrl; audio.preload = 'metadata'; playingContext.audio = audio; playingContext.playing = false;
-    audio.addEventListener('loadedmetadata', ()=> updateProgressUI());
-    audio.addEventListener('timeupdate', ()=> updateProgressUI());
-    audio.addEventListener('ended', ()=> { playingContext.playing=false; stopDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; updateProgressUI(); });
-    if (refs.modalMask) showModal(refs.modalMask);
-    setTimeout(()=> { audio.play().then(()=>{ playingContext.playing=true; startDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='none'; if (refs.svgPause) refs.svgPause.style.display='inline'; }).catch(()=>{ playingContext.playing=false; if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; }); }, 140);
-  }
-  function closePlayer(){ cleanupPlayer(); if (playingContext.audioUrl){ try{ URL.revokeObjectURL(playingContext.audioUrl);}catch(e){} globalObjectURLs.delete(playingContext.audioUrl); playingContext.audioUrl=null; } if (playingContext.coverUrl){ try{ URL.revokeObjectURL(playingContext.coverUrl);}catch(e){} globalObjectURLs.delete(playingContext.coverUrl); playingContext.coverUrl=null; playingContext.coverBlob=null; } if (refs.modalMask) hideModal(refs.modalMask); if (refs.playerFill) refs.playerFill.style.width='0%'; if (refs.curTime) refs.curTime.textContent='0:00'; if (refs.durTime) refs.durTime.textContent='0:00'; if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; }
 
   function releaseMemory(){ cleanupPlayer(); globalObjectURLs.forEach(u=>{ try{ URL.revokeObjectURL(u);}catch(e){} }); globalObjectURLs.clear(); document.querySelectorAll('.row.item').forEach(r=>{ r.__audioBlob=null; r.__coverBlob=null; if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl);}catch(e){} r.__audioUrl=null; } if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl);}catch(e){} r.__coverUrl=null; } }); if (typeof mdui !== 'undefined') mdui.snackbar({message:'已释放内存并撤销临时资源'}); }
 
@@ -276,17 +271,17 @@
     // player progress
     const progressEl = refs.playerProgressBar;
     if (progressEl){
-      progressEl.addEventListener('pointerdown', (e)=>{ if (!playingContext.audio) return; seeking=true; progressEl.setPointerCapture(e.pointerId); seekToPct(computePctFromEvent(e,progressEl)); });
-      progressEl.addEventListener('pointermove', (e)=>{ if(!seeking) return; seekToPct(computePctFromEvent(e,progressEl)); });
+      progressEl.addEventListener('pointerdown', (e)=>{ if (!window.NCM_UI.playingContext?.audio) return; seeking=true; progressEl.setPointerCapture(e.pointerId); window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
+      progressEl.addEventListener('pointermove', (e)=>{ if(!seeking) return; window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
       progressEl.addEventListener('pointerup', (e)=>{ if(!seeking) return; seeking=false; try{ progressEl.releasePointerCapture(e.pointerId);}catch(e){} });
-      progressEl.addEventListener('click', (e)=>{ if(!playingContext.audio) return; seekToPct(computePctFromEvent(e,progressEl)); });
+      progressEl.addEventListener('click', (e)=>{ if(!window.NCM_UI.playingContext?.audio) return; window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
     }
 
     // player controls
-    if (refs.btnPlay) refs.btnPlay.addEventListener('click', ()=> { const audio = playingContext.audio; if(!audio) return; if (playingContext.playing){ audio.pause(); playingContext.playing=false; stopDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; } else { audio.play().then(()=>{ playingContext.playing=true; startDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='none'; if (refs.svgPause) refs.svgPause.style.display='inline'; }).catch(()=>{}); } });
-    if (refs.btnStop) refs.btnStop.addEventListener('click', ()=> { if(!playingContext.audio) return; try{ playingContext.audio.pause(); playingContext.audio.currentTime = 0; }catch(e){} playingContext.playing=false; stopDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; updateProgressUI(); });
-    if (refs.btnClose) refs.btnClose.addEventListener('click', ()=> closePlayer());
-    if (refs.btnDownloadCover) refs.btnDownloadCover.addEventListener('click', ()=> { if (!playingContext.coverBlob) return; const ext = CORE.detectImageMime(new Uint8Array(playingContext.coverBlob.slice(0,4)))==='image/png'?'.png':'.jpg'; saveAs(playingContext.coverBlob, CORE.sanitize(`${refs.playerTitle.textContent} - ${refs.playerSub.textContent || 'cover'}${ext}`)); });
+  if (refs.btnPlay) refs.btnPlay.addEventListener('click', ()=> { const audio = window.NCM_UI.playingContext.audio; if(!audio) return; if (window.NCM_UI.playingContext.playing){ audio.pause(); window.NCM_UI.playingContext.playing=false; window.NCM_UI.stopDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; } else { audio.play().then(()=>{ window.NCM_UI.playingContext.playing=true; window.NCM_UI.startDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='none'; if (refs.svgPause) refs.svgPause.style.display='inline'; }).catch(()=>{}); } });
+  if (refs.btnStop) refs.btnStop.addEventListener('click', ()=> { if(!window.NCM_UI.playingContext.audio) return; try{ window.NCM_UI.playingContext.audio.pause(); window.NCM_UI.playingContext.audio.currentTime = 0; }catch(e){} window.NCM_UI.playingContext.playing=false; window.NCM_UI.stopDiscLoop(); if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; window.NCM_UI.updateProgressUI(); });
+  if (refs.btnClose) refs.btnClose.addEventListener('click', ()=> window.NCM_UI.closePlayer());
+  if (refs.btnDownloadCover) refs.btnDownloadCover.addEventListener('click', ()=> { if (!window.NCM_UI.playingContext.coverBlob) return; const ext = CORE.detectImageMime(new Uint8Array(window.NCM_UI.playingContext.coverBlob.slice(0,4)))==='image/png'?'.png':'.jpg'; saveAs(window.NCM_UI.playingContext.coverBlob, CORE.sanitize(`${refs.playerTitle.textContent} - ${refs.playerSub.textContent || 'cover'}${ext}`)); });
 
     // footer logo drag
     if (refs.footerLogo){
