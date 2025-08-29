@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NCM 解密器</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet" />
   <link href="assets/styles.css" rel="stylesheet" />
   <link href="assets/ui/buttons.css" rel="stylesheet" />
   <link href="assets/ui/batch.css" rel="stylesheet" />
@@ -18,7 +17,6 @@
   
   <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-dark.min.css" rel="stylesheet">
 
-  <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/js/mdui.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
@@ -28,8 +26,21 @@
 
   <style>
     html,body{height:100%;margin:0;overflow:hidden}
-    .wrap{max-width:1200px;margin:28px auto;padding:16px; height: calc(100vh - 56px); box-sizing:border-box}
-    .list{max-height: calc(100% - 170px); overflow:auto; -webkit-overflow-scrolling:touch}
+    .wrap{
+      max-width:1200px;
+      margin:28px auto;
+      padding:16px;
+      height: calc(100vh - 56px - 64px); /* 减去底栏高度 */
+      box-sizing:border-box;
+      position: relative;
+      z-index: 1;
+    }
+    .list{
+      max-height: calc(100% - 170px);
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      margin-bottom: 0;
+    }
     #sizeWarning {
       display:none;
       position:fixed; inset:0; z-index:4000;
@@ -47,7 +58,7 @@
     @media (max-width:900px){ .wrap{margin:14px auto} }
   </style>
 </head>
-<body class="mdui-typo">
+<body>
   <div id="sizeWarning">
     <div class="box">
       <h3>窗口太小啦 🤏</h3>
@@ -212,6 +223,29 @@
       </div>
     </div>
   </div>
+
+  <!-- 底栏 -->
+  <footer class="footer-bar">
+    <div class="copyright">
+      <div>建议分批处理大文件以降低内存占用</div>
+      <div>本站和作者相关 Logo 版权所有，未经授权不得使用</div>
+    </div>
+    <div class="links">
+      <a href="https://github.com/dm192/NCM-Decryption" target="_blank" rel="noopener" class="link-item" title="访问项目仓库">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+        </svg>
+        项目源码
+      </a>
+      <a href="#" id="btnShowAnnounce" class="link-item" title="查看公告">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        公告
+      </a>
+      <div class="logoPlaceholder" id="footerLogo" title="将你的 logo 拖到这里以替换占位">你的 Logo</div>
+    </div>
+  </footer>
 
   <script src="assets/app-core.js"></script>
   <script src="assets/ui/modals.js"></script>

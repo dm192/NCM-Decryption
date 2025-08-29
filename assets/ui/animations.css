@@ -194,24 +194,32 @@
 }
 
 /* 模态框动画 */
-.mdui-dialog {
+.modalMask,
+.announceMask {
+  backdrop-filter: blur(0);
+  transition: all var(--duration-normal) var(--ease-out);
   opacity: 0;
-  transform: scale(0.9) translateY(var(--slide-normal));
+  pointer-events: none;
+}
+
+.modalMask[aria-hidden="false"],
+.announceMask[aria-hidden="false"] {
+  backdrop-filter: blur(8px);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal,
+.announceBox {
+  opacity: 0;
+  transform: scale(0.95) translateY(var(--slide-normal));
   transition: all var(--duration-normal) var(--ease-bounce);
 }
 
-.mdui-dialog.mdui-dialog-open {
+.modalMask[aria-hidden="false"] .modal,
+.announceMask[aria-hidden="false"] .announceBox {
   opacity: 1;
   transform: scale(1) translateY(0);
-}
-
-.mdui-overlay {
-  backdrop-filter: blur(0);
-  transition: backdrop-filter var(--duration-slow) var(--ease-out);
-}
-
-.mdui-overlay-show {
-  backdrop-filter: blur(4px);
 }
 
 /* 批量操作区域动画 */
@@ -233,13 +241,27 @@
 }
 
 /* 播放器动画 */
-.player {
+.modal[aria-label="播放器"] {
   transform: translateY(100%);
   transition: transform var(--duration-normal) var(--ease-bounce);
 }
 
-.player.active {
+.modalMask[aria-hidden="false"] .modal[aria-label="播放器"] {
   transform: translateY(0);
+}
+
+/* 封面旋转动画 */
+.disc {
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}
+
+.disc.playing {
+  animation: disc-rotate 20s linear infinite;
+}
+
+@keyframes disc-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* 通用hover效果 */

@@ -13,6 +13,8 @@
   gap: 24px;
   z-index: 100;
   backdrop-filter: blur(12px);
+  min-height: 64px;
+  box-sizing: border-box;
 }
 
 .footer-bar .copyright {
