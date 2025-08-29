@@ -128,7 +128,7 @@
       if (dlBtn) dlBtn.disabled = false;
       if (coverDl) coverDl.disabled = !row.__coverBlob;
 
-      if (previewBtn) previewBtn.addEventListener('click', ()=> openPlayer({ title, artist, album, audioBlob, coverBlob: row.__coverBlob }));
+  if (previewBtn) previewBtn.addEventListener('click', ()=> window.NCM_UI.openPlayer && window.NCM_UI.openPlayer({ title, artist, album, audioBlob, coverBlob: row.__coverBlob }));
       if (dlBtn) dlBtn.addEventListener('click', ()=> saveAs(audioBlob, CORE.sanitize(`${title} - ${artist || 'unknown'}.${ext}`)));
       if (coverDl) coverDl.addEventListener('click', ()=> {
         if (!row.__coverBlob) return;
@@ -204,7 +204,7 @@
   // 移除“我知道了”按钮的关闭事件，使模态框只能自动关闭
   window.addEventListener('resize', ()=> checkWindowSize());
 
-    attachMaskCloseBehavior(refs.modalMask, ()=> closePlayer());
+  attachMaskCloseBehavior(refs.modalMask, ()=> { if (window.NCM_UI && typeof window.NCM_UI.closePlayer === 'function') window.NCM_UI.closePlayer(); });
     attachMaskCloseBehavior(refs.announceMask, ()=> hideModal(refs.announceMask));
     attachMaskCloseBehavior(refs.settingsMask, ()=> hideModal(refs.settingsMask));
     attachMaskCloseBehavior(refs.errorMask, ()=> hideModal(refs.errorMask));
@@ -230,10 +230,10 @@
     // player progress
     const progressEl = refs.playerProgressBar;
     if (progressEl){
-      progressEl.addEventListener('pointerdown', (e)=>{ if (!window.NCM_UI.playingContext?.audio) return; seeking=true; progressEl.setPointerCapture(e.pointerId); window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
-      progressEl.addEventListener('pointermove', (e)=>{ if(!seeking) return; window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
+  progressEl.addEventListener('pointerdown', (e)=>{ if (!window.NCM_UI.playingContext?.audio) return; seeking=true; progressEl.setPointerCapture(e.pointerId); window.NCM_UI.seekToPct(window.NCM_UI.computePctFromEvent(e,progressEl)); });
+  progressEl.addEventListener('pointermove', (e)=>{ if(!seeking) return; window.NCM_UI.seekToPct(window.NCM_UI.computePctFromEvent(e,progressEl)); });
       progressEl.addEventListener('pointerup', (e)=>{ if(!seeking) return; seeking=false; try{ progressEl.releasePointerCapture(e.pointerId);}catch(e){} });
-      progressEl.addEventListener('click', (e)=>{ if(!window.NCM_UI.playingContext?.audio) return; window.NCM_UI.seekToPct(computePctFromEvent(e,progressEl)); });
+  progressEl.addEventListener('click', (e)=>{ if(!window.NCM_UI.playingContext?.audio) return; window.NCM_UI.seekToPct(window.NCM_UI.computePctFromEvent(e,progressEl)); });
     }
 
     // player controls
@@ -298,7 +298,9 @@
     else { document.body.classList.add('theme-dark'); document.body.classList.remove('theme-light'); if (ghLight && ghDark){ ghLight.disabled = true; ghDark.disabled = false; } }
   }
 
-  window.NCM_UI = { openPlayer, closePlayer, releaseMemory, checkWindowSize };
+  // 不要覆盖整个 window.NCM_UI，逐个注册方法以保留其它模块导出的函数
+  window.NCM_UI.releaseMemory = releaseMemory;
+  window.NCM_UI.checkWindowSize = checkWindowSize;
 
   // IMPORTANT FIX: ensure init runs whether DOMContentLoaded already fired or not
   if (document.readyState === 'loading') {

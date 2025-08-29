@@ -5,10 +5,13 @@
   const CORE = window.NCMCore;
   window.NCM_UI = window.NCM_UI || {};
   const refsGetter = () => window.NCM_UI._refs || {};
-  const globalObjectURLs = window.NCM_UI.globalObjectURLs || new Set();
-  const playingContext = window.NCM_UI.playingContext || { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
+  // 挂载共享集合到 window.NCM_UI，确保跨模块一致
+  const globalObjectURLs = window.NCM_UI.globalObjectURLs = window.NCM_UI.globalObjectURLs || new Set();
+  const playingContext = window.NCM_UI.playingContext = window.NCM_UI.playingContext || { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
 
   function computePctFromEvent(e, el){ const rect = el.getBoundingClientRect(); const x = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX); return Math.min(1, Math.max(0, (x - rect.left) / rect.width)); }
+  // 导出定位辅助函数供其他模块使用
+  window.NCM_UI.computePctFromEvent = computePctFromEvent;
 
   function updateProgressUI(){ const refs = refsGetter(); const audio = playingContext.audio; if (!audio){ if (refs.playerFill) refs.playerFill.style.width='0%'; if (refs.curTime) refs.curTime.textContent='0:00'; if (refs.durTime) refs.durTime.textContent='0:00'; return; } const dur = isFinite(audio.duration)?audio.duration:0; const cur = isFinite(audio.currentTime)?audio.currentTime:0; const pct = dur>0?(cur/dur)*100:0; if (refs.playerFill) refs.playerFill.style.width=Math.min(100,Math.max(0,pct))+'%'; if (refs.curTime) refs.curTime.textContent = CORE.formatTime(cur); if (refs.durTime) refs.durTime.textContent = CORE.formatTime(dur); }
 
@@ -29,11 +32,11 @@
     audio.addEventListener('loadedmetadata', ()=> updateProgressUI());
     audio.addEventListener('timeupdate', ()=> updateProgressUI());
     audio.addEventListener('ended', ()=> { playingContext.playing=false; stopDiscLoop(); const refs2 = refsGetter(); if (refs2.svgPlay) refs2.svgPlay.style.display='inline'; if (refs2.svgPause) refs2.svgPause.style.display='none'; updateProgressUI(); });
-    if (refs.modalMask) showModal(refs.modalMask);
+  if (refs.modalMask) window.NCM_UI.showModal && window.NCM_UI.showModal(refs.modalMask);
     setTimeout(()=> { audio.play().then(()=>{ playingContext.playing=true; startDiscLoop(); const refs2 = refsGetter(); if (refs2.svgPlay) refs2.svgPlay.style.display='none'; if (refs2.svgPause) refs2.svgPause.style.display='inline'; }).catch(()=>{ playingContext.playing=false; const refs2 = refsGetter(); if (refs2.svgPlay) refs2.svgPlay.style.display='inline'; if (refs2.svgPause) refs2.svgPause.style.display='none'; }); }, 140);
   }
 
-  function closePlayer(){ const refs = refsGetter(); cleanupPlayer(); if (playingContext.audioUrl){ try{ URL.revokeObjectURL(playingContext.audioUrl);}catch(e){} globalObjectURLs.delete(playingContext.audioUrl); playingContext.audioUrl=null; } if (playingContext.coverUrl){ try{ URL.revokeObjectURL(playingContext.coverUrl);}catch(e){} globalObjectURLs.delete(playingContext.coverUrl); playingContext.coverUrl=null; playingContext.coverBlob=null; } if (refs.modalMask) hideModal(refs.modalMask); if (refs.playerFill) refs.playerFill.style.width='0%'; if (refs.curTime) refs.curTime.textContent='0:00'; if (refs.durTime) refs.durTime.textContent='0:00'; if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; }
+  function closePlayer(){ const refs = refsGetter(); cleanupPlayer(); if (playingContext.audioUrl){ try{ URL.revokeObjectURL(playingContext.audioUrl);}catch(e){} globalObjectURLs.delete(playingContext.audioUrl); playingContext.audioUrl=null; } if (playingContext.coverUrl){ try{ URL.revokeObjectURL(playingContext.coverUrl);}catch(e){} globalObjectURLs.delete(playingContext.coverUrl); playingContext.coverUrl=null; playingContext.coverBlob=null; } if (refs.modalMask) window.NCM_UI.hideModal && window.NCM_UI.hideModal(refs.modalMask); if (refs.playerFill) refs.playerFill.style.width='0%'; if (refs.curTime) refs.curTime.textContent='0:00'; if (refs.durTime) refs.durTime.textContent='0:00'; if (refs.svgPlay) refs.svgPlay.style.display='inline'; if (refs.svgPause) refs.svgPause.style.display='none'; }
 
   // 导出到共享命名空间
   window.NCM_UI.openPlayer = openPlayer;
