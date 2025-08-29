@@ -8,6 +8,11 @@
   --accent: #7c3aed;
   --accent2: #6ee7b7;
   --fg: #e6eef8;
+  --progress-bg: rgba(255,255,255,0.1);
+  --progress-fill: var(--accent);
+  --button-bg: rgba(255,255,255,0.05);
+  --button-hover: rgba(255,255,255,0.1);
+}
   --card: #0f1724;
 
   --btn-bg: linear-gradient(90deg,var(--accent),#4c1d95);
