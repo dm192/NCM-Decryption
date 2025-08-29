@@ -26,10 +26,13 @@
       display:none;
       position:fixed; inset:0; z-index:4000;
       background: rgba(1,6,12,0.6); color:var(--fg);
-      display:grid; place-items:center; text-align:center; padding:20px;
+      place-items:center; text-align:center; padding:20px;
       opacity:0; transform: translateY(8px) scale(.99); transition: opacity .18s ease, transform .18s ease;
     }
-    #sizeWarning.open{ opacity:1; transform:none; }
+    #sizeWarning.open{
+      display: flex;
+      opacity:1; transform:none;
+    }
     #sizeWarning .box { background:var(--card); padding:18px;border-radius:12px; max-width:600px; }
     @media (max-width:900px){ .wrap{margin:14px auto} }
   </style>
