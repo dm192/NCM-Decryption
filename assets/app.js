@@ -1,4 +1,4 @@
-/* Main application JS for NCM tool (split file) */
+/* Main application JS for NCM tool (updated: modal animation & better theme button handling) */
 const ANNOUNCEMENT_URL = 'https://cdn-cf.dormant.top/ncm/announcement.md';
 const CORE_KEY = CryptoJS.enc.Utf8.parse('hzHRAmso5kInbaxW');
 const META_KEY = CryptoJS.enc.Utf8.parse("#14ljk_!\\]&0U<'(");
@@ -47,7 +47,31 @@ const ghDarkLink = document.getElementById('gh-markdown-dark');
 const THEME_KEY = 'ncm_theme_pref';
 const ANNOUNCE_HIDE_KEY = 'ncm_announce_hide_until';
 
-/* Theme handling */
+/* --------------------------
+   Modal helpers: show/hide with animation
+   - showModal(el) will set display:flex and add class 'open' on next frame
+   - hideModal(el) removes 'open' and after transition hides (display:none)
+   -------------------------- */
+function showModal(el){
+  if (!el) return;
+  el.style.display = 'flex';
+  // force reflow then add open class to trigger transition
+  requestAnimationFrame(()=> {
+    const inner = el.querySelector('.modal') || el.querySelector('.announceBox');
+    if (inner) inner.classList.add('open');
+  });
+}
+function hideModal(el){
+  if (!el) return;
+  const inner = el.querySelector('.modal') || el.querySelector('.announceBox');
+  if (inner) inner.classList.remove('open');
+  // wait for transition (slightly longer than CSS transition) then hide
+  setTimeout(()=> { el.style.display = 'none'; }, 260);
+}
+
+/* --------------------------
+   Theme handling (same variables as CSS)
+   -------------------------- */
 function applyTheme(pref){
   if (pref === 'auto'){
     const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -69,17 +93,21 @@ function applyTheme(pref){
 }
 function initTheme(){
   const saved = localStorage.getItem(THEME_KEY) || 'auto';
-  themeSelect.value = saved;
+  if (themeSelect) themeSelect.value = saved;
   applyTheme(saved);
   if (saved === 'auto' && window.matchMedia){
     const mq = window.matchMedia('(prefers-color-scheme: dark)');
     mq.addEventListener('change', ()=> applyTheme('auto'));
   }
 }
-themeSelect.addEventListener('change', (e)=>{ const v = e.target.value; localStorage.setItem(THEME_KEY, v); applyTheme(v); });
+if (themeSelect){
+  themeSelect.addEventListener('change', (e)=>{ const v = e.target.value; localStorage.setItem(THEME_KEY, v); applyTheme(v); });
+}
 initTheme();
 
-/* Announcement handling (with 30-day hide) */
+/* --------------------------
+   Announcement fetching & 30-day hide
+   -------------------------- */
 function shouldShowAnnouncement(){
   const until = localStorage.getItem(ANNOUNCE_HIDE_KEY);
   if (!until) return true;
@@ -87,13 +115,12 @@ function shouldShowAnnouncement(){
   if (isNaN(t)) return true;
   return Date.now() > t;
 }
-
 async function fetchAndShowAnnouncement(){
   if (!shouldShowAnnouncement()) return;
   try {
     announceContent.textContent = '正在加载公告…';
     announceRetry.style.display = 'none';
-    announceMask.style.display = 'flex';
+    showModal(announceMask);
     const res = await fetch(ANNOUNCEMENT_URL, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
     const md = await res.text();
@@ -107,23 +134,22 @@ async function fetchAndShowAnnouncement(){
   }
 }
 announceOk.addEventListener('click', ()=> {
-  if (announceDontShow.checked){
+  if (announceDontShow && announceDontShow.checked){
     const days30 = Date.now() + 30*24*3600*1000;
     localStorage.setItem(ANNOUNCE_HIDE_KEY, String(days30));
   }
-  announceMask.style.display = 'none';
+  hideModal(announceMask);
 });
 announceRetry.addEventListener('click', ()=> fetchAndShowAnnouncement());
 
-/* Settings modal handlers */
-btnSettings.addEventListener('click', ()=> settingsMask.style.display = 'flex');
-settingsClose.addEventListener('click', ()=> settingsMask.style.display = 'none');
-openAnnouncementFromSettings.addEventListener('click', ()=> {
-  settingsMask.style.display = 'none';
-  fetchAndShowAnnouncement();
-});
+/* settings modal */
+btnSettings.addEventListener('click', ()=> showModal(settingsMask));
+settingsClose.addEventListener('click', ()=> hideModal(settingsMask));
+openAnnouncementFromSettings.addEventListener('click', ()=> { hideModal(settingsMask); fetchAndShowAnnouncement(); });
 
-/* Player: seeking, RAF rotation, controls (same logic) */
+/* --------------------------
+   Player controls: seeking, RAF rotation, etc.
+   -------------------------- */
 let seeking = false;
 function computePctFromEvent(e, el){
   const rect = el.getBoundingClientRect();
@@ -170,6 +196,7 @@ function updateProgressUI(){
   durTimeEl.textContent = formatTime(dur);
 }
 
+/* play/pause/stop/close */
 btnPlay.addEventListener('click', ()=>{
   const audio = playingContext.audio;
   if (!audio) return;
@@ -188,6 +215,7 @@ btnDownloadCover.addEventListener('click', ()=> {
   saveAs(playingContext.coverBlob, sanitize(`${playerTitle.textContent} - ${playerSub.textContent || 'cover'}${ext}`));
 });
 
+/* open/close player with modal animations */
 function openPlayer({title, artist, album, audioBlob, coverBlob}){
   cleanupPlayer();
   playerTitle.textContent = title || '未知';
@@ -214,7 +242,7 @@ function openPlayer({title, artist, album, audioBlob, coverBlob}){
   audio.addEventListener('timeupdate', ()=> updateProgressUI());
   audio.addEventListener('ended', ()=> { playingContext.playing=false; stopDiscLoop(); svgPlay.style.display='inline'; svgPause.style.display='none'; updateProgressUI(); });
 
-  modal.style.display = 'flex';
+  showModal(modal);
   setTimeout(()=> {
     audio.play().then(()=> {
       playingContext.playing = true; startDiscLoop(); svgPlay.style.display='none'; svgPause.style.display='inline';
@@ -231,17 +259,17 @@ function cleanupPlayer(){
   }
   stopDiscLoop();
 }
-
 function closePlayer(){
   cleanupPlayer();
   if (playingContext.audioUrl){ try{ URL.revokeObjectURL(playingContext.audioUrl); }catch(e){} globalObjectURLs.delete(playingContext.audioUrl); playingContext.audioUrl = null; }
   if (playingContext.coverUrl){ try{ URL.revokeObjectURL(playingContext.coverUrl); }catch(e){} globalObjectURLs.delete(playingContext.coverUrl); playingContext.coverUrl = null; playingContext.coverBlob = null; }
-  modal.style.display = 'none';
+  hideModal(modal);
   progressFill.style.width = '0%';
   curTimeEl.textContent = '0:00'; durTimeEl.textContent = '0:00';
   svgPlay.style.display = 'inline'; svgPause.style.display = 'none';
 }
 
+/* release memory */
 function releaseMemory(){
   cleanupPlayer();
   globalObjectURLs.forEach(u => { try{ URL.revokeObjectURL(u); }catch(e){} });
@@ -254,7 +282,7 @@ function releaseMemory(){
   mdui.snackbar({message:'已释放内存并撤销临时资源'});
 }
 
-/* File handling / UI */
+/* file handling and UI rows */
 ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
 ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
 drop.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
@@ -357,7 +385,7 @@ async function processOne(file){
   }
 }
 
-/* utilities and NCM core (same as before) */
+/* utilities and NCM core (unchanged) */
 function detectImageMime(bytes){ if (!bytes || bytes.length < 4) return 'application/octet-stream'; if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg'; if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png'; if (bytes[0] === 0x47 && bytes[1] === 0x49) return 'image/gif'; return 'application/octet-stream'; }
 function sanitize(s){ return String(s||'').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,' ').trim(); }
 function formatTime(s){ if (!isFinite(s) || s <= 0) return '0:00'; const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; }
@@ -406,4 +434,19 @@ footerLogo.addEventListener('dragleave', e=>{ footerLogo.style.outline = ''; });
 footerLogo.addEventListener('drop', e=>{ e.preventDefault(); footerLogo.style.outline=''; const f = e.dataTransfer.files[0]; if (!f) return; const url = URL.createObjectURL(f); footerLogo.innerHTML = ''; const img = document.createElement('img'); img.src = url; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='contain'; footerLogo.appendChild(img); globalObjectURLs.add(url); });
 
 /* Clear list */
-def_clear_all_placeholder = True
+function clearAll(){
+  document.querySelectorAll('.row.item').forEach(r=>{
+    if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl); }catch(e){} r.__audioUrl = null; }
+    if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl); }catch(e){} r.__coverUrl = null; }
+    r.__audioBlob = null; r.__coverBlob = null;
+    r.remove();
+  });
+  zip = null; zipBtn.disabled = true;
+  mdui.snackbar({message:'列表已清空'});
+}
+
+/* Init logic: load announcement if allowed */
+window.addEventListener('load', ()=> {
+  initTheme();
+  fetchAndShowAnnouncement().catch(()=>{});
+});
