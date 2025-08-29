@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NCM 前端批量解密器 · 公共版（主题自动/手动切换）</title>
+  <title>NCM 前端批量解密器 · 公共版（拆分版）</title>
 
-  <!-- MDUI-like UI (kept previously) -->
+  <!-- UI CSS -->
   <link href="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet" />
+  <!-- local styles -->
+  <link href="assets/styles.css" rel="stylesheet" />
 
-  <!-- GitHub markdown styles (light + dark) -->
+  <!-- GitHub markdown CSS (light + dark) -->
   <link id="gh-markdown-light" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css" rel="stylesheet">
   <link id="gh-markdown-dark" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-dark.min.css" rel="stylesheet" disabled>
 
@@ -19,83 +21,8 @@
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
-
-  <style>
-    /* theme variables (default dark) */
-    :root {
-      --bg-0: #071225;
-      --bg-1: linear-gradient(180deg,var(--bg-0),#041222);
-      --card-bg: rgba(255,255,255,0.02);
-      --muted: #9fb3c8;
-      --accent: #7c3aed;
-      --accent2: #6ee7b7;
-      --fg: #e6eef8;
-      --card: #0f1724;
-    }
-
-    /* light theme overrides */
-    body.theme-light {
-      --bg-0: #f6f8fa;
-      --bg-1: linear-gradient(180deg,#ffffff,#f6f8fa);
-      --card-bg: rgba(2,6,23,0.03);
-      --muted: #556;
-      --accent: #6c63ff;
-      --accent2: #1f9e7a;
-      --fg: #0b1220;
-      --card: #ffffff;
-    }
-
-    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:var(--fg);background:var(--bg-1)}
-    .wrap{max-width:1200px;margin:28px auto;padding:16px}
-    .card{background:linear-gradient(180deg,var(--card-bg),rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,0.35);color:var(--fg)}
-    .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-    .title{font-size:20px;margin:0}
-    .subtitle{color:var(--muted);font-size:13px}
-    .controls{display:flex;gap:8px;align-items:center}
-    .btn{padding:8px 12px;border-radius:10px;border:none;background:linear-gradient(90deg,var(--accent),#4c1d95);color:white;cursor:pointer}
-    .btn.outline{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-    .drop{margin-top:12px;border:2px dashed rgba(255,255,255,0.06);padding:14px;border-radius:10px;text-align:center;cursor:pointer}
-    .list{margin-top:14px;display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow:auto;padding-right:6px}
-    .row{display:grid;grid-template-columns:84px 1fr 90px 90px 220px;gap:12px;align-items:center;padding:10px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.005), rgba(255,255,255,0.002));transition:transform .15s}
-    .row:hover{transform:translateY(-6px)}
-    .cover{width:72px;height:72px;border-radius:8px;object-fit:cover;background:#08101a}
-    .titleStrong{font-weight:700}
-    .meta{color:var(--muted);font-size:13px}
-    .small{font-size:12px;color:var(--muted)}
-    .rightActions{display:flex;gap:8px;justify-content:flex-end}
-    .iconBtn{background:transparent;border:none;padding:6px;border-radius:8px;color:var(--fg);cursor:pointer}
-    .iconBtn:hover{background:rgba(255,255,255,0.03)}
-    .rowProgress{height:6px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden}
-    .rowProgress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
-
-    /* modal player */
-    .modalMask{position:fixed;inset:0;background:rgba(1,6,12,0.6);display:none;align-items:center;justify-content:center;z-index:2000}
-    .modal{width:min(760px,94vw);background:var(--card);border-radius:12px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,0.6);display:flex;gap:16px;align-items:center}
-    .disc{width:160px;height:160px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 30% 30%, rgba(255,255,255,0.03), transparent);box-shadow:inset 0 6px 18px rgba(0,0,0,0.4)}
-    .disc img{width:84%;height:84%;border-radius:50%;object-fit:cover;transform-origin:50% 50%}
-    .playerInfo{flex:1}
-    .playerTitle{font-size:18px;font-weight:700}
-    .playerSub{color:var(--muted);margin-top:6px}
-    .playerTime{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-top:8px}
-    .progressBar{width:100%;height:10px;border-radius:999px;background:rgba(255,255,255,0.03);overflow:hidden;cursor:pointer;margin-top:8px}
-    .progressBar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .08s linear}
-    .playerControls{display:flex;align-items:center;gap:10px;margin-top:12px}
-    .playerIcon{width:38px;height:38px;border-radius:8px;background:rgba(255,255,255,0.03);display:inline-grid;place-items:center;cursor:pointer}
-    .footer{margin-top:14px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
-    .logoPlaceholder{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,0.03);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
-
-    /* announcement modal */
-    .announceMask{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(1,6,12,0.6);z-index:2500}
-    .announceBox{width:min(880px,94vw);max-height:80vh;overflow:auto;background:var(--card);border-radius:12px;padding:18px;box-shadow:0 30px 80px rgba(0,0,0,0.7)}
-    .announceFooter{display:flex;justify-content:flex-end;margin-top:12px}
-    .announceOk{padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(90deg,var(--accent),#4c1d95);color:white;cursor:pointer}
-    .announceError{color:#ffb4b4;background:rgba(255,20,20,0.04);padding:8px;border-radius:8px}
-    .markdown-body{background:transparent;color:inherit;padding:0}
-
-    @media (max-width:900px){ .row{grid-template-columns:64px 1fr 80px 80px 140px} .disc{width:120px;height:120px} }
-  </style>
 </head>
-<body>
+<body class="mdui-typo">
   <div class="wrap">
     <div class="card">
       <div class="top">
@@ -104,15 +31,8 @@
           <div class="subtitle">浏览器本地解密并导出音频；开放使用请遵守当地法律与服务条款。</div>
         </div>
 
-        <!-- controls: theme selector + others -->
         <div class="controls">
-          <label class="small muted" style="margin-right:6px">主题</label>
-          <select id="themeSelect" style="padding:6px;border-radius:8px;background:transparent;color:var(--fg);border:1px solid rgba(255,255,255,0.06)">
-            <option value="auto">自动（跟随系统）</option>
-            <option value="light">浅色</option>
-            <option value="dark">深色</option>
-          </select>
-
+          <button id="btnSettings" class="btn outline" title="设置">⚙️ 设置</button>
           <button id="clearBtn" class="btn outline">清空</button>
           <button id="zipBtn" class="btn" disabled>全部打包 ZIP</button>
           <button id="releaseBtn" class="btn outline">释放内存</button>
@@ -121,18 +41,20 @@
 
       <div id="drop" class="drop" tabindex="0" style="margin-top:12px">
         <div style="font-weight:600">拖放 .ncm 文件到此，或点击选择文件上传（支持批量）。</div>
-        <div class="small" style="margin-top:6px;color:var(--muted)">播放窗口支持进度定位、显示时长、封面下载；可手动释放内存，无需刷新。</div>
+        <div class="small" style="margin-top:6px;color:var(--muted)">播放窗口支持进度定位、显示时长、封面下载；可手动释放内存。</div>
         <div style="margin-top:10px"><label class="btn" style="cursor:pointer">选择文件<input id="fileInput" type="file" accept=".ncm" multiple hidden></label></div>
       </div>
 
       <div class="list" id="list" aria-live="polite">
-        <div class="row" style="font-weight:700;color:var(--muted);font-size:13px">
+        <div class="row header" style="font-weight:700;color:var(--muted);font-size:13px">
           <div>封面</div><div>歌曲信息</div><div>格式</div><div>时长</div><div style="text-align:right">操作</div>
         </div>
       </div>
 
       <div class="footer">
-        <div><span class="small muted">建议分批处理大文件以降低内存占用。</span></div>
+        <div>
+          <span class="small muted">建议分批处理大文件以降低内存占用。禁止未授权使用本站或用户上传的 Logo；如要使用请联系版权所有者。</span>
+        </div>
         <div style="display:flex;gap:12px;align-items:center">
           <div class="logoPlaceholder" id="footerLogo" title="将你的 logo 拖到这里以替换占位">你的 Logo</div>
         </div>
@@ -174,482 +96,42 @@
     <div class="announceBox">
       <div id="announceContent" class="markdown-body" style="min-height:120px">正在加载公告…</div>
       <div class="announceFooter">
+        <label style="display:flex;align-items:center;gap:8px;margin-right:auto"><input type="checkbox" id="announceDontShow"> 30 天不再显示</label>
         <button id="announceRetry" class="btn outline" style="margin-right:8px;display:none">重试</button>
         <button id="announceOk" class="announceOk">好的</button>
       </div>
     </div>
   </div>
 
-<script>
-/* ===========================
-   配置
-   =========================== */
-const ANNOUNCEMENT_URL = 'https://cdn-cf.dormant.top/ncm/announcement.md';
-const CORE_KEY = CryptoJS.enc.Utf8.parse('hzHRAmso5kInbaxW');
-const META_KEY = CryptoJS.enc.Utf8.parse("#14ljk_!\\]&0U<'(");
+  <!-- settings modal -->
+  <div id="settingsMask" class="announceMask" role="dialog" aria-hidden="true">
+    <div class="announceBox">
+      <h3>设置</h3>
+      <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
+        <label style="min-width:88px">主题</label>
+        <select id="themeSelect">
+          <option value="auto">自动（跟随系统）</option>
+          <option value="light">浅色</option>
+          <option value="dark">深色</option>
+        </select>
+      </div>
 
-/* ===========================
-   全局状态 & DOM
-   =========================== */
-let zip = null;
-const globalObjectURLs = new Set();
-const playingContext = { audio: null, raf: null, angle: 0, lastTs: 0, playing: false, audioUrl: null, coverUrl: null, coverBlob: null };
+      <div style="margin-top:12px;display:flex;gap:12px;align-items:center">
+        <label style="min-width:88px">公告</label>
+        <button id="openAnnouncementFromSettings" class="btn outline">打开公告</button>
+      </div>
 
-const list = document.getElementById('list');
-const drop = document.getElementById('drop');
-const fileInput = document.getElementById('fileInput');
-const zipBtn = document.getElementById('zipBtn');
-const clearBtn = document.getElementById('clearBtn');
-const releaseBtn = document.getElementById('releaseBtn');
-const footerLogo = document.getElementById('footerLogo');
+      <div style="margin-top:12px;color:var(--muted)">
+        <strong>版权与商标</strong>
+        <p>本站与用户上传的 Logo 及素材受版权所有。<strong>禁止未经授权地复制、使用或分发他人的 Logo 或商标</strong>。如需使用，请联系版权所有者并获取书面授权。</p>
+      </div>
 
-const modal = document.getElementById('modal');
-const discImg = document.getElementById('discImg');
-const playerTitle = document.getElementById('playerTitle');
-const playerSub = document.getElementById('playerSub');
-const curTimeEl = document.getElementById('curTime');
-const durTimeEl = document.getElementById('durTime');
-const progressBar = document.getElementById('playerProgressBar');
-const progressFill = document.getElementById('playerProgressFill');
-const btnPlay = document.getElementById('btnPlay');
-const btnStop = document.getElementById('btnStop');
-const btnClose = document.getElementById('btnClose');
-const btnDownloadCover = document.getElementById('btnDownloadCover');
-const svgPlay = document.getElementById('svgPlay');
-const svgPause = document.getElementById('svgPause');
-
-const announceMask = document.getElementById('announceMask');
-const announceContent = document.getElementById('announceContent');
-const announceOk = document.getElementById('announceOk');
-const announceRetry = document.getElementById('announceRetry');
-
-const themeSelect = document.getElementById('themeSelect');
-const ghLightLink = document.getElementById('gh-markdown-light');
-const ghDarkLink = document.getElementById('gh-markdown-dark');
-
-/* ===========================
-   主题：自动 / 手动 切换（localStorage）
-   =========================== */
-const THEME_KEY = 'ncm_theme_pref'; // 'auto'|'light'|'dark'
-function applyTheme(pref){
-  // pref = 'auto'|'light'|'dark'
-  if (pref === 'auto'){
-    const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.body.classList.toggle('theme-dark', systemDark);
-    document.body.classList.toggle('theme-light', !systemDark);
-    // markdown CSS
-    ghLightLink.disabled = systemDark;
-    ghDarkLink.disabled = !systemDark;
-  } else if (pref === 'light'){
-    document.body.classList.add('theme-light');
-    document.body.classList.remove('theme-dark');
-    ghLightLink.disabled = false;
-    ghDarkLink.disabled = true;
-  } else {
-    document.body.classList.add('theme-dark');
-    document.body.classList.remove('theme-light');
-    ghLightLink.disabled = true;
-    ghDarkLink.disabled = false;
-  }
-}
-function initTheme(){
-  const saved = localStorage.getItem(THEME_KEY) || 'auto';
-  themeSelect.value = saved;
-  applyTheme(saved);
-  // if auto, listen to system changes
-  if (saved === 'auto' && window.matchMedia){
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener('change', ()=> applyTheme('auto'));
-  }
-}
-themeSelect.addEventListener('change', (e)=>{
-  const v = e.target.value;
-  localStorage.setItem(THEME_KEY, v);
-  applyTheme(v);
-});
-initTheme();
-
-/* ===========================
-   Announcement：获取并渲染 Markdown（带错误处理）
-   =========================== */
-async function fetchAndShowAnnouncement(){
-  try {
-    announceContent.textContent = '正在加载公告…';
-    announceRetry.style.display = 'none';
-    announceMask.style.display = 'flex';
-    const res = await fetch(ANNOUNCEMENT_URL, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const md = await res.text();
-    const html = marked.parse(md || '');
-    const safe = DOMPurify.sanitize(html, {ALLOWED_TAGS: DOMPurify.getDefaultWhiteList()});
-    announceContent.innerHTML = safe;
-  } catch (err) {
-    console.error('公告加载失败', err);
-    announceContent.innerHTML = `<div class="announceError">公告加载失败：${escapeHtml(String(err))}</div>`;
-    announceRetry.style.display = 'inline-block';
-  }
-}
-announceOk.addEventListener('click', ()=> announceMask.style.display = 'none');
-announceRetry.addEventListener('click', ()=> fetchAndShowAnnouncement());
-window.addEventListener('load', ()=> fetchAndShowAnnouncement().catch(()=>{}));
-
-/* ===========================
-   Player：进度定位、旋转保持角度、关闭停止 & 释放资源
-   =========================== */
-let seeking = false;
-function computePctFromEvent(e, el){
-  const rect = el.getBoundingClientRect();
-  const x = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX);
-  return Math.min(1, Math.max(0, (x - rect.left) / rect.width));
-}
-progressBar.addEventListener('pointerdown', (e)=>{ if (!playingContext.audio) return; seeking = true; progressBar.setPointerCapture(e.pointerId); seekToPct(computePctFromEvent(e, progressBar)); });
-progressBar.addEventListener('pointermove', (e)=>{ if (!seeking) return; seekToPct(computePctFromEvent(e, progressBar)); });
-progressBar.addEventListener('pointerup', (e)=>{ if (!seeking) return; seeking = false; try{ progressBar.releasePointerCapture(e.pointerId);}catch(e){} });
-progressBar.addEventListener('click', (e)=>{ if (!playingContext.audio) return; seekToPct(computePctFromEvent(e, progressBar)); });
-
-function seekToPct(pct){
-  const audio = playingContext.audio;
-  if (!audio || !isFinite(audio.duration) || audio.duration <= 0) return;
-  audio.currentTime = pct * audio.duration;
-  updateProgressUI();
-}
-
-/* RAF rotation so pause preserves angle */
-function startDiscLoop(){
-  if (playingContext.raf) return;
-  playingContext.lastTs = performance.now();
-  function step(ts){
-    if (!playingContext.playing || !playingContext.audio) { playingContext.raf = null; return; }
-    const dt = (ts - playingContext.lastTs) / 1000;
-    playingContext.lastTs = ts;
-    const speed = 60; // deg/s
-    playingContext.angle = (playingContext.angle + speed * dt) % 360;
-    discImg.style.transform = `rotate(${playingContext.angle}deg)`;
-    updateProgressUI();
-    playingContext.raf = requestAnimationFrame(step);
-  }
-  playingContext.raf = requestAnimationFrame(step);
-}
-function stopDiscLoop(){ if (playingContext.raf){ cancelAnimationFrame(playingContext.raf); playingContext.raf = null; } }
-
-function updateProgressUI(){
-  const audio = playingContext.audio;
-  if (!audio){ progressFill.style.width = '0%'; curTimeEl.textContent = '0:00'; durTimeEl.textContent = '0:00'; return; }
-  const dur = isFinite(audio.duration) ? audio.duration : 0;
-  const cur = isFinite(audio.currentTime) ? audio.currentTime : 0;
-  const pct = dur > 0 ? (cur / dur) * 100 : 0;
-  progressFill.style.width = Math.min(100, Math.max(0, pct)) + '%';
-  curTimeEl.textContent = formatTime(cur);
-  durTimeEl.textContent = formatTime(dur);
-}
-
-/* control bindings */
-btnPlay.addEventListener('click', ()=>{
-  const audio = playingContext.audio;
-  if (!audio) return;
-  if (playingContext.playing){ audio.pause(); playingContext.playing=false; stopDiscLoop(); svgPlay.style.display='inline'; svgPause.style.display='none'; }
-  else { audio.play().then(()=>{ playingContext.playing=true; startDiscLoop(); svgPlay.style.display='none'; svgPause.style.display='inline'; }).catch(()=>{}); }
-});
-btnStop.addEventListener('click', ()=> {
-  if (!playingContext.audio) return;
-  try{ playingContext.audio.pause(); playingContext.audio.currentTime = 0; }catch(e){}
-  playingContext.playing=false; stopDiscLoop(); svgPlay.style.display='inline'; svgPause.style.display='none'; updateProgressUI();
-});
-btnClose.addEventListener('click', ()=> closePlayer());
-btnDownloadCover.addEventListener('click', ()=> {
-  if (!playingContext.coverBlob) return;
-  const ext = detectImageMime(new Uint8Array(playingContext.coverBlob.slice(0,4)))==='image/png' ? '.png' : '.jpg';
-  saveAs(playingContext.coverBlob, sanitize(`${playerTitle.textContent} - ${playerSub.textContent || 'cover'}${ext}`));
-});
-
-/* open player */
-function openPlayer({title, artist, album, audioBlob, coverBlob}){
-  cleanupPlayer();
-
-  playerTitle.textContent = title || '未知';
-  playerSub.textContent = artist || album || '';
-
-  // cover
-  if (coverBlob){
-    const coverUrl = URL.createObjectURL(coverBlob);
-    globalObjectURLs.add(coverUrl);
-    playingContext.coverUrl = coverUrl;
-    playingContext.coverBlob = coverBlob;
-    discImg.src = coverUrl;
-  } else { discImg.src = ''; playingContext.coverBlob = null; }
-
-  // audio
-  const audioUrl = URL.createObjectURL(audioBlob);
-  globalObjectURLs.add(audioUrl);
-  playingContext.audioUrl = audioUrl;
-  const audio = new Audio();
-  audio.src = audioUrl;
-  audio.preload = 'metadata';
-  playingContext.audio = audio;
-  playingContext.playing = false; // will try autplay
-
-  audio.addEventListener('loadedmetadata', ()=> updateProgressUI());
-  audio.addEventListener('timeupdate', ()=> updateProgressUI());
-  audio.addEventListener('ended', ()=> { playingContext.playing=false; stopDiscLoop(); svgPlay.style.display='inline'; svgPause.style.display='none'; updateProgressUI(); });
-
-  modal.style.display = 'flex';
-  setTimeout(()=> {
-    audio.play().then(()=> {
-      playingContext.playing = true; startDiscLoop(); svgPlay.style.display='none'; svgPause.style.display='inline';
-    }).catch(()=> {
-      // autoplay blocked
-      playingContext.playing = false; svgPlay.style.display='inline'; svgPause.style.display='none';
-    });
-  }, 140);
-}
-
-/* cleanup & close */
-function cleanupPlayer(){
-  if (playingContext.audio){
-    try{ playingContext.audio.pause(); playingContext.audio.src = ''; }catch(e){}
-    playingContext.audio = null;
-  }
-  stopDiscLoop();
-}
-function closePlayer(){
-  cleanupPlayer();
-  if (playingContext.audioUrl){ try{ URL.revokeObjectURL(playingContext.audioUrl); }catch(e){} globalObjectURLs.delete(playingContext.audioUrl); playingContext.audioUrl = null; }
-  if (playingContext.coverUrl){ try{ URL.revokeObjectURL(playingContext.coverUrl); }catch(e){} globalObjectURLs.delete(playingContext.coverUrl); playingContext.coverUrl = null; playingContext.coverBlob = null; }
-  modal.style.display = 'none';
-  progressFill.style.width = '0%';
-  curTimeEl.textContent = '0:00'; durTimeEl.textContent = '0:00';
-  svgPlay.style.display = 'inline'; svgPause.style.display = 'none';
-}
-
-/* release memory (no refresh) */
-function releaseMemory(){
-  cleanupPlayer();
-  globalObjectURLs.forEach(u => { try{ URL.revokeObjectURL(u); }catch(e){} });
-  globalObjectURLs.clear();
-  document.querySelectorAll('.row.item').forEach(r => {
-    r.__audioBlob = null; r.__coverBlob = null;
-    if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl); }catch(e){} r.__audioUrl = null; }
-    if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl); }catch(e){} r.__coverUrl = null; }
-  });
-  mdui.snackbar({message:'已释放内存并撤销临时资源'});
-}
-
-/* ===========================
-   File handling + UI rows + NCM core
-   =========================== */
-['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('drag'); }));
-['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('drag'); }));
-drop.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
-fileInput.addEventListener('change', e => handleFiles(e.target.files));
-clearBtn.addEventListener('click', clearAll);
-zipBtn.addEventListener('click', async ()=> { if (!zip) return; const blob = await zip.generateAsync({type:'blob'}); saveAs(blob, `ncm_exports_${Date.now()}.zip`); });
-
-function handleFiles(files){
-  const arr = Array.from(files).filter(f=>f.name.toLowerCase().endsWith('.ncm'));
-  if (arr.length === 0){ mdui.snackbar({message:'未检测到 .ncm 文件'}); return; }
-  if (!zip) zip = new JSZip();
-  arr.forEach(f => processOne(f));
-}
-
-function createRow(){
-  const row = document.createElement('div');
-  row.className = 'row item';
-  row.innerHTML = `
-    <div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div>
-    <div>
-      <div class="titleStrong">解析中…</div>
-      <div class="meta small">文件：<span class="filename"></span></div>
-      <div style="margin-top:8px" class="rowProgress" hidden><i style="width:0%"></i></div>
+      <div class="announceFooter" style="margin-top:16px">
+        <button id="settingsClose" class="btn outline" style="margin-right:8px">关闭</button>
+      </div>
     </div>
-    <div class="small format">--</div>
-    <div class="small duration">--:--</div>
-    <div style="text-align:right" class="rightActions">
-      <button class="iconBtn preview" disabled title="播放">▶</button>
-      <button class="iconBtn download" disabled title="下载">⬇</button>
-      <button class="iconBtn coverDl" disabled title="下载封面">🖼</button>
-    </div>
-  `;
-  list.appendChild(row);
-  return row;
-}
+  </div>
 
-function setRowProgress(row, pct){
-  const bar = row.querySelector('.rowProgress'); const inner = bar?.querySelector('i');
-  if (!bar) return; bar.hidden = false; inner.style.width = Math.min(100, Math.max(0, pct)) + '%';
-  if (pct >= 100) setTimeout(()=> bar.hidden = true, 300);
-}
-
-async function processOne(file){
-  const row = createRow();
-  row.querySelector('.filename').textContent = file.name;
-  try {
-    const ab = await file.arrayBuffer();
-    const data = new Uint8Array(ab);
-    setRowProgress(row, 5);
-    const out = ncmDecrypt(data, p => setRowProgress(row, p*0.9 + 5));
-    setRowProgress(row, 90);
-
-    // cover
-    if (out.cover && out.cover.length > 8){
-      const mime = detectImageMime(out.cover);
-      const coverBlob = new Blob([out.cover], {type: mime});
-      const coverUrl = URL.createObjectURL(coverBlob);
-      globalObjectURLs.add(coverUrl);
-      const img = row.querySelector('.cover'); img.src = coverUrl; img.style.opacity = 1;
-      row.__coverBlob = coverBlob; row.__coverUrl = coverUrl;
-    }
-
-    // meta
-    const title = (out.meta && out.meta.musicName) ? out.meta.musicName : file.name.replace(/\.ncm$/i,'');
-    const artist = (out.meta && out.meta.artist) ? out.meta.artist.map(a=>a[0]).join(', ') : (out.meta && out.meta.artistName) ? out.meta.artistName : '';
-    const album = (out.meta && (out.meta.album || out.meta.albumName)) ? (out.meta.album || out.meta.albumName) : '';
-    row.querySelector('.titleStrong').textContent = title + (artist ? (' — ' + artist) : '');
-    if (album) row.querySelector('.meta').textContent = '专辑：' + album;
-
-    // audio blob & URL
-    const ext = (out.ext && out.ext.toLowerCase()) || (out.mime && out.mime.includes('flac') ? 'flac' : 'mp3');
-    const mime = out.mime || (ext === 'flac' ? 'audio/flac' : 'audio/mpeg');
-    const audioBlob = new Blob([out.audio], {type: mime});
-    const audioUrl = URL.createObjectURL(audioBlob);
-    globalObjectURLs.add(audioUrl);
-    row.__audioBlob = audioBlob; row.__audioUrl = audioUrl;
-
-    // temporary audio to read duration
-    const aTmp = new Audio(); aTmp.preload = 'metadata'; aTmp.src = audioUrl;
-    aTmp.addEventListener('loadedmetadata', ()=>{ const d = aTmp.duration; row.querySelector('.duration').textContent = isFinite(d) ? formatTime(d) : '--:--'; aTmp.src = ''; });
-
-    // enable actions
-    const previewBtn = row.querySelector('.preview');
-    const dlBtn = row.querySelector('.download');
-    const coverDl = row.querySelector('.coverDl');
-    previewBtn.disabled = false; dlBtn.disabled = false; coverDl.disabled = !row.__coverBlob;
-
-    previewBtn.addEventListener('click', ()=> openPlayer({ title, artist, album, audioBlob, coverBlob: row.__coverBlob }));
-    dlBtn.addEventListener('click', ()=> saveAs(audioBlob, sanitize(`${title} - ${artist || 'unknown'}.${ext}`)));
-    coverDl.addEventListener('click', ()=> {
-      if (!row.__coverBlob) return;
-      const extn = detectImageMime(new Uint8Array(row.__coverBlob.slice(0,4))) === 'image/png' ? '.png' : '.jpg';
-      saveAs(row.__coverBlob, sanitize(`${title} - ${artist || 'unknown'}${extn}`));
-    });
-
-    if (!zip) zip = new JSZip();
-    zip.file(sanitize(`${title} - ${artist || 'unknown'}.${ext}`), audioBlob);
-    zipBtn.disabled = false;
-
-    setRowProgress(row, 100);
-  } catch (err) {
-    console.error(err);
-    row.querySelector('.titleStrong').textContent = '解密失败：' + (err.message || err);
-    setRowProgress(row, 100);
-  }
-}
-
-/* ===========================
-   Utilities & NCM core
-   =========================== */
-function detectImageMime(bytes){
-  if (!bytes || bytes.length < 4) return 'application/octet-stream';
-  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) return 'image/jpeg';
-  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) return 'image/png';
-  if (bytes[0] === 0x47 && bytes[1] === 0x49) return 'image/gif';
-  return 'application/octet-stream';
-}
-function sanitize(s){ return String(s||'').replace(/[\\/:*?"<>|]/g,'_').replace(/\s+/g,' ').trim(); }
-function formatTime(s){ if (!isFinite(s) || s <= 0) return '0:00'; const m = Math.floor(s/60); const sec = Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${sec}`; }
-function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-/* NCM Decryption core (same working implementation) */
-function ncmDecrypt(data, onProgress){
-  const dv = new DataView(data.buffer, data.byteOffset, data.byteLength);
-  const MAGIC = 'CTENFDAM';
-  const sig = String.fromCharCode(...data.slice(0,8));
-  if (sig !== MAGIC) throw new Error('不是有效的 NCM 文件（缺少 CTENFDAM）');
-  let off = 8 + 2;
-  const keyLen = dv.getUint32(off, true); off += 4;
-  let keyData = data.slice(off, off+keyLen); off += keyLen;
-  for (let i=0;i<keyData.length;i++) keyData[i] ^= 0x64;
-  const rc4Seed = aesEcbDecrypt(keyData, CORE_KEY);
-  const seed = rc4Seed.slice(17);
-  const keyBox = initKeyBox(seed);
-
-  const metaLen = dv.getUint32(off, true); off += 4;
-  let metaRaw = data.slice(off, off+metaLen); off += metaLen;
-  for (let i=0;i<metaRaw.length;i++) metaRaw[i] ^= 0x63;
-  const prefix = "163 key(Don't modify):";
-  let metaStr = new TextDecoder().decode(metaRaw);
-  metaStr = metaStr.slice(prefix.length);
-  const metaBytes = Uint8Array.from(atob(metaStr), c=>c.charCodeAt(0));
-  const metaDec = aesEcbDecrypt(metaBytes, META_KEY);
-  const jsonStr = new TextDecoder().decode(metaDec).replace(/^music:/,'');
-  let meta = {};
-  try{ meta = JSON.parse(jsonStr); }catch(e){ meta = {}; }
-
-  off += 4 + 5;
-  const imgSize = dv.getUint32(off, true); off += 4;
-  const cover = data.slice(off, off+imgSize); off += imgSize;
-  const audioEnc = data.slice(off);
-  const audio = audioDec(audioEnc, keyBox, onProgress);
-  const ext = (meta.format && meta.format.toLowerCase()) || guessExt(audio);
-  const mime = ext === 'flac' ? 'audio/flac' : 'audio/mpeg';
-  return { audio, meta, cover, mime, ext };
-}
-function aesEcbDecrypt(bytes, key){
-  const wa = CryptoJS.lib.WordArray.create(bytes);
-  const dec = CryptoJS.AES.decrypt({ciphertext: wa}, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 });
-  const out = new Uint8Array(dec.sigBytes);
-  const words = dec.words;
-  for (let i=0;i<out.length;i++){
-    const w = words[Math.floor(i/4)];
-    const shift = 24 - 8*(i%4);
-    out[i] = (w >>> shift) & 0xff;
-  }
-  return out;
-}
-function initKeyBox(seed){
-  const box = new Uint8Array(256);
-  for (let i=0;i<256;i++) box[i]=i;
-  let last=0, idx=0;
-  for (let i=0;i<256;i++){
-    last = (box[i] + last + seed[idx]) & 0xff;
-    [box[i], box[last]] = [box[last], box[i]];
-    idx = (idx + 1) % seed.length;
-  }
-  return box;
-}
-function audioDec(enc, box, onProgress){
-  const out = new Uint8Array(enc.length);
-  const CHUNK = 0x8000;
-  for (let i=0;i<enc.length;i++){
-    const j = (i+1) & 0xff;
-    out[i] = enc[i] ^ box[(box[j] + box[(box[j] + j) & 0xff]) & 0xff];
-    if (onProgress && (i%CHUNK===0)) onProgress(i/enc.length*100);
-  }
-  if (onProgress) onProgress(100);
-  return out;
-}
-function guessExt(bytes){
-  if (bytes[0]===0x66 && bytes[1]===0x4C && bytes[2]===0x61 && bytes[3]===0x43) return 'flac';
-  if (bytes[0]===0xFF && (bytes[1]&0xE0)===0xE0) return 'mp3';
-  return 'mp3';
-}
-
-/* Footer: allow dropping logo image */
-footerLogo.addEventListener('dragover', e=>{ e.preventDefault(); footerLogo.style.outline = '1px dashed rgba(255,255,255,0.12)'; });
-footerLogo.addEventListener('dragleave', e=>{ footerLogo.style.outline = ''; });
-footerLogo.addEventListener('drop', e=>{ e.preventDefault(); footerLogo.style.outline=''; const f = e.dataTransfer.files[0]; if (!f) return; const url = URL.createObjectURL(f); footerLogo.innerHTML = ''; const img = document.createElement('img'); img.src = url; img.style.width='100%'; img.style.height='100%'; img.style.objectFit='contain'; footerLogo.appendChild(img); globalObjectURLs.add(url); });
-
-/* Clear list */
-function clearAll(){
-  document.querySelectorAll('.row.item').forEach(r=>{
-    if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl); }catch(e){} r.__audioUrl = null; }
-    if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl); }catch(e){} r.__coverUrl = null; }
-    r.__audioBlob = null; r.__coverBlob = null;
-    r.remove();
-  });
-  zip = null; zipBtn.disabled = true;
-  mdui.snackbar({message:'列表已清空'});
-}
-
-</script>
+  <script src="assets/app.js"></script>
 </body>
 </html>
