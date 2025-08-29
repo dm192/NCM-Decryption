@@ -64,7 +64,8 @@
 
   <!-- player modal -->
   <div id="modal" class="modalMask" role="dialog" aria-hidden="true">
-    <div class="modal" role="document" aria-label="播放器">
+    <!-- 给 inner 一个统一标记 data-modal-inner，JS 会直接匹配它 -->
+    <div class="modal" role="document" aria-label="播放器" data-modal-inner>
       <div class="disc" id="disc"><img id="discImg" src="" alt="cover"></div>
       <div class="playerInfo">
         <div class="playerTitle" id="playerTitle">未知</div>
@@ -93,7 +94,7 @@
 
   <!-- announcement modal -->
   <div id="announceMask" class="announceMask" role="dialog" aria-hidden="true">
-    <div class="announceBox">
+    <div class="announceBox" data-modal-inner>
       <div id="announceContent" class="markdown-body" style="min-height:120px">正在加载公告…</div>
       <div class="announceFooter">
         <label style="display:flex;align-items:center;gap:8px;margin-right:auto"><input type="checkbox" id="announceDontShow"> 30 天不再显示</label>
@@ -105,7 +106,7 @@
 
   <!-- settings modal -->
   <div id="settingsMask" class="announceMask" role="dialog" aria-hidden="true">
-    <div class="announceBox">
+    <div class="announceBox" data-modal-inner>
       <h3>设置</h3>
       <div style="display:flex;gap:12px;align-items:center;margin-top:8px">
         <label style="min-width:88px">主题</label>
