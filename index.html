@@ -18,22 +18,20 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
 
-  <!-- quick page-specific adjustments: ensure only .list scrolls and add size warning overlay -->
   <style>
-    html,body{height:100%;margin:0;overflow:hidden} /* 禁止 body 滚动，list 单独滚 */
+    html,body{height:100%;margin:0;overflow:hidden}
     .wrap{max-width:1200px;margin:28px auto;padding:16px; height: calc(100vh - 56px); box-sizing:border-box}
     .list{max-height: calc(100% - 170px); overflow:auto; -webkit-overflow-scrolling:touch}
-    /* size warning overlay */
     #sizeWarning {
       display:none;
       position:fixed; inset:0; z-index:4000;
-      background:rgba(0,0,0,0.6); color:#fff;
+      background: rgba(1,6,12,0.6); color:var(--fg);
       display:grid; place-items:center; text-align:center; padding:20px;
+      opacity:0; transform: translateY(8px) scale(.99); transition: opacity .18s ease, transform .18s ease;
     }
+    #sizeWarning.open{ opacity:1; transform:none; }
     #sizeWarning .box { background:var(--card); padding:18px;border-radius:12px; max-width:600px; }
-    @media (max-width:900px){
-      .wrap{margin:14px auto}
-    }
+    @media (max-width:900px){ .wrap{margin:14px auto} }
   </style>
 </head>
 <body class="mdui-typo">
@@ -84,7 +82,7 @@
     </div>
   </div>
 
-  <!-- player modal (inner marked with data-modal-inner) -->
+  <!-- player modal -->
   <div id="modal" class="modalMask" role="dialog" aria-hidden="true">
     <div class="modal" role="document" aria-label="播放器" data-modal-inner>
       <div class="disc" id="disc"><img id="discImg" src="" alt="cover"></div>
@@ -154,7 +152,19 @@
     </div>
   </div>
 
-  <!-- split scripts: core then ui -->
+  <!-- error modal (new) -->
+  <div id="errorMask" class="announceMask" role="dialog" aria-hidden="true">
+    <div class="announceBox" data-modal-inner>
+      <h3>处理错误 — 诊断信息</h3>
+      <div id="errorContent" style="white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;max-height:260px;overflow:auto;background:rgba(0,0,0,0.03);padding:10px;border-radius:8px;margin-top:8px;color:var(--fg)"></div>
+      <div style="margin-top:12px" class="announceFooter">
+        <button id="errorCopy" class="btn outline" style="margin-right:8px">复制诊断信息</button>
+        <button id="errorReport" class="btn outline" style="margin-right:8px">用邮箱提交反馈</button>
+        <button id="errorClose" class="btn">关闭</button>
+      </div>
+    </div>
+  </div>
+
   <script src="assets/app-core.js"></script>
   <script src="assets/app-ui.js"></script>
 </body>
