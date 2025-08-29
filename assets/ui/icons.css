@@ -1,0 +1,77 @@
+/* 列表中的图标按钮 */
+.iconBtn {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  transition: all var(--duration-normal) var(--ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.iconBtn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}
+
+.iconBtn:hover {
+  background: var(--hover-bg);
+  color: var(--primary);
+}
+
+.iconBtn:hover svg {
+  transform: scale(1.2);
+}
+
+.iconBtn:active {
+  background: var(--active-bg);
+  transform: scale(0.95);
+}
+
+.iconBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* 播放器图标 */
+.playerIcon {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--fg);
+  transition: all var(--duration-normal) var(--ease-out);
+  background: transparent;
+}
+
+.playerIcon:hover {
+  background: var(--hover-bg);
+  color: var(--primary);
+}
+
+.playerIcon:hover svg {
+  transform: scale(1.2);
+}
+
+.playerIcon:active {
+  background: var(--active-bg);
+  transform: scale(0.95);
+}
+
+.playerIcon svg {
+  width: 18px;
+  height: 18px;
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}

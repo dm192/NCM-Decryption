@@ -117,7 +117,26 @@
   }
 
   /* file UI */
-  function createRow(){ const row = document.createElement('div'); row.className='row item'; row.innerHTML = `<div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div><div><div class="titleStrong">解析中…</div><div class="meta small">文件：<span class="filename"></span></div><div style="margin-top:8px" class="rowProgress" hidden><i style="width:0%"></i></div></div><div class="small format">--</div><div class="small duration">--:--</div><div style="text-align:right" class="rightActions"><button class="iconBtn preview" disabled title="播放">▶</button><button class="iconBtn download" disabled title="下载">⬇</button><button class="iconBtn coverDl" disabled title="下载封面">🖼</button></div>`; if (refs.list) refs.list.appendChild(row); return row; }
+  function createRow(){ const row = document.createElement('div'); row.className='row item'; row.innerHTML = `<div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div><div><div class="titleStrong">解析中…</div><div class="meta small">文件：<span class="filename"></span></div><div style="margin-top:8px" class="rowProgress" hidden><i style="width:0%"></i></div></div><div class="small format">--</div><div class="small duration">--:--</div><div style="text-align:right" class="rightActions"><button class="iconBtn preview" disabled title="播放">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </svg>
+</button>
+<button class="iconBtn download" disabled title="下载">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+</button>
+<button class="iconBtn coverDl" disabled title="下载封面">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="18" height="14" rx="2"></rect>
+    <path d="M21 15l-5-5-4 4-3-3-4 4"></path>
+    <line x1="12" y1="17" x2="12" y2="22"></line>
+    <polyline points="9 19 12 22 15 19"></polyline>
+  </svg>
+</button></div>`; if (refs.list) refs.list.appendChild(row); return row; }
   function setRowProgress(row,pct){ const bar = row.querySelector('.rowProgress'); const inner = bar?.querySelector('i'); if(!bar) return; bar.hidden=false; inner.style.width = Math.min(100, Math.max(0, pct)) + '%'; if(pct>=100) setTimeout(()=>bar.hidden=true,300); }
 
   async function processOne(file){
