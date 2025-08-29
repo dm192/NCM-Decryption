@@ -3,32 +3,54 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>NCM 前端批量解密器 · 公共版（主题 & 动画修复）</title>
+  <title>NCM 前端批量解密器 · 公共版</title>
 
-  <!-- UI CSS -->
   <link href="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/css/mdui.min.css" rel="stylesheet" />
-  <!-- local styles -->
   <link href="assets/styles.css" rel="stylesheet" />
 
-  <!-- GitHub markdown CSS (light + dark) -->
   <link id="gh-markdown-light" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css" rel="stylesheet">
   <link id="gh-markdown-dark" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-dark.min.css" rel="stylesheet" disabled>
 
-  <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/mdui@1.0.2/dist/js/mdui.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
+
+  <!-- quick page-specific adjustments: ensure only .list scrolls and add size warning overlay -->
+  <style>
+    html,body{height:100%;margin:0;overflow:hidden} /* 禁止 body 滚动，list 单独滚 */
+    .wrap{max-width:1200px;margin:28px auto;padding:16px; height: calc(100vh - 56px); box-sizing:border-box}
+    .list{max-height: calc(100% - 170px); overflow:auto; -webkit-overflow-scrolling:touch}
+    /* size warning overlay */
+    #sizeWarning {
+      display:none;
+      position:fixed; inset:0; z-index:4000;
+      background:rgba(0,0,0,0.6); color:#fff;
+      display:grid; place-items:center; text-align:center; padding:20px;
+    }
+    #sizeWarning .box { background:var(--card); padding:18px;border-radius:12px; max-width:600px; }
+    @media (max-width:900px){
+      .wrap{margin:14px auto}
+    }
+  </style>
 </head>
 <body class="mdui-typo">
+  <div id="sizeWarning">
+    <div class="box">
+      <h3>窗口太小啦 🤏</h3>
+      <p>为获得良好体验，请放大浏览器窗口或在设备上打开此页面（建议宽度 ≥ 600px 且高度 ≥ 520px）。</p>
+      <div style="margin-top:12px"><button id="sizeOk" class="btn">我知道了</button></div>
+    </div>
+  </div>
+
   <div class="wrap">
     <div class="card">
       <div class="top">
         <div>
           <h2 class="title">NCM 前端批量解密器 · 公共版</h2>
-          <div class="subtitle">浏览器本地解密并导出音频；开放使用请遵守当地法律与服务条款。</div>
+          <div class="subtitle">在浏览器本地解密并导出音频；请遵守当地法律与云音乐服务条款。</div>
         </div>
 
         <div class="controls">
@@ -62,9 +84,8 @@
     </div>
   </div>
 
-  <!-- player modal -->
+  <!-- player modal (inner marked with data-modal-inner) -->
   <div id="modal" class="modalMask" role="dialog" aria-hidden="true">
-    <!-- 给 inner 一个统一标记 data-modal-inner，JS 会直接匹配它 -->
     <div class="modal" role="document" aria-label="播放器" data-modal-inner>
       <div class="disc" id="disc"><img id="discImg" src="" alt="cover"></div>
       <div class="playerInfo">
@@ -133,6 +154,8 @@
     </div>
   </div>
 
-  <script src="assets/app.js"></script>
+  <!-- split scripts: core then ui -->
+  <script src="assets/app-core.js"></script>
+  <script src="assets/app-ui.js"></script>
 </body>
 </html>
