@@ -3,12 +3,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 16px;
+  padding: 8px 20px;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
-  gap: 0.5rem;
+  gap: 0.625rem;
   position: relative;
   overflow: hidden;
   transform: translateZ(0);
@@ -18,9 +18,11 @@
   user-select: none;
   background: var(--button-bg);
   color: var(--fg);
-  border: 1px solid transparent;
-  min-height: 36px;
-  min-width: 64px;
+  border: 1px solid var(--border-subtle);
+  min-height: 38px;
+  min-width: 80px;
+  white-space: nowrap;
+  backdrop-filter: blur(8px);
 }
 
 .btn::before {
@@ -70,50 +72,72 @@
   transition-duration: var(--duration-fast);
 }
 
-/* 主要按钮 */
+/* 主要按钮 - 强调样式 */
 .btn.primary {
-  background: var(--btn-primary-bg);
+  background: linear-gradient(135deg, var(--btn-primary-bg) 0%, var(--btn-primary-active) 100%);
   color: var(--btn-primary-fg);
   border: none;
-  padding: 10px 20px;
+  padding: 10px 24px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  letter-spacing: 0.01em;
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 .btn.primary:hover {
-  background: var(--btn-primary-hover);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, var(--btn-primary-hover) 0%, var(--btn-primary-bg) 100%);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+  transform: translateY(-3px);
 }
 
 .btn.primary:active {
   background: var(--btn-primary-active);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  transform: translateY(-1px);
 }
 
 /* 次要按钮 */
 .btn.secondary {
   background: var(--btn-secondary-bg);
   color: var(--btn-secondary-fg);
-  border: none;
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
 }
 
 .btn.secondary:hover {
   background: var(--btn-secondary-hover);
+  border-color: var(--border-hover);
 }
 
 .btn.secondary:active {
   background: var(--btn-secondary-active);
+  border-color: var(--border-active);
 }
 
 /* 轮廓按钮 */
 .btn.outline {
   background: var(--btn-outline-bg);
   color: var(--btn-outline-fg);
-  border: 1px solid var(--btn-outline-border);
+  border: 1.5px solid var(--btn-outline-border);
+  font-weight: 500;
 }
 
 .btn.outline:hover {
   background: var(--btn-outline-hover);
+  border-color: var(--btn-primary-bg);
+  color: var(--btn-primary-bg);
+}
+
+.btn.outline:active {
+  background: var(--btn-outline-active);
+  border-color: var(--btn-primary-active);
+  color: var(--btn-primary-active);
 }
 
 /* 危险按钮 */
@@ -121,10 +145,17 @@
   background: var(--btn-danger-bg);
   color: var(--btn-danger-fg);
   border: none;
+  font-weight: 500;
 }
 
 .btn.danger:hover {
   background: var(--btn-danger-hover);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.btn.danger:active {
+  background: var(--btn-danger-active);
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.1);
 }
 
 /* 禁用状态 */
