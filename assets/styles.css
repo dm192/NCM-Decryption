@@ -1,4 +1,4 @@
-/* styles for NCM tool (split file) */
+/* styles for NCM tool (完整文件，主题友好版) */
 /* theme variables (default dark) */
 :root {
   --bg-0: #071225;
@@ -31,10 +31,10 @@ body.theme-light {
   --fg: #0b1220;
   --card: #ffffff;
 
-  /* 把浅色主题下按钮文字改成黑色，保证可读性 */
+  /* 浅色主题下按钮文字改为黑色以保证可读性 */
   --btn-bg: linear-gradient(90deg,#2f2bff,#17a67a);
   --btn-outline-bg: rgba(15,23,36,0.03);
-  --btn-fg: #0b1220;          /* <-- 改动：浅色主题按钮文字为黑色 */
+  --btn-fg: #0b1220;
   --btn-border: rgba(15,23,36,0.06);
 
   --icon-bg: rgba(15,23,36,0.04);
@@ -64,11 +64,6 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe 
   box-shadow:none;
 }
 
-/* ensure small text buttons visible in light theme */
-.drop .btn, .controls .btn {
-  /* keep same variables, no extra override */
-}
-
 /* icon buttons */
 .iconBtn, .playerIcon {
   background: var(--icon-bg);
@@ -78,7 +73,6 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe 
 }
 .iconBtn:hover, .playerIcon:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--icon-bg) 70%, var(--accent) 30%); }
 
-/* keep good contrast for text inside icon-like controls (play/pause) */
 .playerIcon svg { stroke: currentColor; }
 
 /* rest of layout */
@@ -96,7 +90,18 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe 
 .rowProgress > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2))}
 
 /* modal player */
-.modalMask, .announceMask { position:fixed;inset:0;background:rgba(1,6,12,0.45);display:none;align-items:center;justify-content:center;z-index:2000; }
+.modalMask, .announceMask { position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:2000; }
+/* use theme-friendly overlay: default dark-ish, but text/color use theme vars */
+.modalMask { background: rgba(1,6,12,0.45); color: var(--fg); }
+.announceMask { background: rgba(1,6,12,0.45); color: var(--fg); }
+
+/* in light theme make overlay light and readable */
+body.theme-light .modalMask,
+body.theme-light .announceMask {
+  background: rgba(255,255,255,0.9);
+  color: var(--fg);
+}
+
 .modal{ width:min(760px,94vw); background:var(--card); border-radius:12px; padding:18px; box-shadow:0 30px 80px rgba(0,0,0,0.6); display:flex; gap:16px; align-items:center; transform: translateY(12px) scale(.98); opacity:0; transition: transform .22s cubic-bezier(.2,.9,.2,1), opacity .22s ease; }
 .modal.open { transform: translateY(0) scale(1); opacity:1; }
 .announceBox { width:min(880px,94vw); max-height:80vh; overflow:auto; background:var(--card); border-radius:12px; padding:18px; box-shadow:0 30px 80px rgba(0,0,0,0.7); transform: translateY(12px) scale(.98); opacity:0; transition: transform .22s cubic-bezier(.2,.9,.2,1), opacity .22s ease; }
@@ -120,6 +125,22 @@ html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe 
 .markdown-body{background:transparent;color:inherit;padding:0}
 .footer{margin-top:14px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .logoPlaceholder{width:40px;height:40px;border-radius:8px;background:var(--icon-bg);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+
+/* size warning overlay (theme-aware) */
+#sizeWarning {
+  display:none;
+  position:fixed; inset:0; z-index:4000;
+  background: rgba(1,6,12,0.6); /* dark default */
+  color: var(--fg);
+  display:grid; place-items:center; text-align:center; padding:20px;
+}
+#sizeWarning .box { background: var(--card); padding:18px;border-radius:12px; max-width:600px; color:var(--fg); }
+
+/* light theme: make overlay light and text readable */
+body.theme-light #sizeWarning {
+  background: rgba(255,255,255,0.9);
+}
+body.theme-light #sizeWarning .box { background: var(--card); color: var(--fg); }
 
 /* small responsive */
 @media (max-width:900px){ .row{grid-template-columns:64px 1fr 80px 80px 140px} .disc{width:120px;height:120px} }
