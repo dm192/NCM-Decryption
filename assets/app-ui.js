@@ -83,7 +83,38 @@
 
   /* announcement */
   function shouldShowAnnouncement(){ const until = localStorage.getItem(ANNOUNCE_HIDE_KEY); if (!until) return true; const t = parseInt(until,10); if (isNaN(t)) return true; return Date.now() > t; }
-  async function fetchAndShowAnnouncement(){ if (!shouldShowAnnouncement()) return; try{ if (refs.announceContent) refs.announceContent.textContent='正在加载公告…'; if (refs.announceRetry) refs.announceRetry.style.display='none'; if (refs.announceMask) showModal(refs.announceMask); const res = await fetch(ANNOUNCEMENT_URL,{cache:'no-cache'}); if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`); const md = await res.text(); const html = marked.parse(md || ''); const safe = DOMPurify.sanitize(html, {ALLOWED_TAGS: DOMPurify.getDefaultWhiteList()}); if (refs.announceContent) refs.announceContent.innerHTML = safe; }catch(err){ console.error('公告加载失败', err); if (refs.announceContent) refs.announceContent.innerHTML = `<div class="announceError">公告加载失败：${CORE.escapeHtml(String(err))}</div>`; if (refs.announceRetry) refs.announceRetry.style.display='inline-block'; } }
+  async function fetchAndShowAnnouncement(){
+    if (!shouldShowAnnouncement()) return;
+    try{
+      if (refs.announceContent) refs.announceContent.textContent='正在加载公告…';
+      if (refs.announceRetry) refs.announceRetry.style.display='none';
+      if (refs.announceMask) showModal(refs.announceMask);
+      const res = await fetch(ANNOUNCEMENT_URL,{cache:'no-cache'});
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      const md = await res.text();
+      const html = marked.parse(md || '');
+      let safe;
+      try {
+        if (typeof DOMPurify !== 'undefined') {
+          // Prefer to just call sanitize; try to read default config for allowed tags when available
+          const cfg = (typeof DOMPurify.getDefaultCfg === 'function') ? DOMPurify.getDefaultCfg() : (DOMPurify.defaultConfig || {});
+          const allowed = cfg && cfg.ALLOWED_TAGS ? cfg.ALLOWED_TAGS : undefined;
+          safe = (allowed && Array.isArray(allowed)) ? DOMPurify.sanitize(html, {ALLOWED_TAGS: allowed}) : DOMPurify.sanitize(html);
+        } else {
+          console.warn('DOMPurify 未加载，公告内容将不被消毒');
+          safe = html;
+        }
+      } catch (e) {
+        console.error('DOMPurify sanitize failed, falling back to plain html', e);
+        try { safe = (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) ? DOMPurify.sanitize(html) : html; } catch(e2) { safe = html; }
+      }
+      if (refs.announceContent) refs.announceContent.innerHTML = safe;
+    }catch(err){
+      console.error('公告加载失败', err);
+      if (refs.announceContent) refs.announceContent.innerHTML = `<div class="announceError">公告加载失败：${CORE.escapeHtml(String(err))}</div>`;
+      if (refs.announceRetry) refs.announceRetry.style.display='inline-block';
+    }
+  }
 
   /* file UI */
   function createRow(){ const row = document.createElement('div'); row.className='row item'; row.innerHTML = `<div><img class="cover" src="" alt="cover" style="opacity:.18;border-radius:8px"></div><div><div class="titleStrong">解析中…</div><div class="meta small">文件：<span class="filename"></span></div><div style="margin-top:8px" class="rowProgress" hidden><i style="width:0%"></i></div></div><div class="small format">--</div><div class="small duration">--:--</div><div style="text-align:right" class="rightActions"><button class="iconBtn preview" disabled title="播放">▶</button><button class="iconBtn download" disabled title="下载">⬇</button><button class="iconBtn coverDl" disabled title="下载封面">🖼</button></div>`; if (refs.list) refs.list.appendChild(row); return row; }
