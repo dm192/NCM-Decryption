@@ -1,0 +1,155 @@
+/* 列表动画 */
+.row.item {
+  transform: translateX(calc(var(--slide-normal) * -1));
+  opacity: 0;
+  animation: slide-in-right var(--duration-normal) var(--ease-out) forwards;
+}
+
+.row.item.selected {
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.row.item.removed {
+  animation: slide-out-left var(--duration-normal) var(--ease-in-out) forwards;
+}
+
+/* 行动画延迟 */
+@for $i from 1 through 20 {
+  .row.item:nth-child(#{$i}) {
+    animation-delay: calc(#{$i} * 50ms);
+  }
+}
+
+/* 进入动画 */
+@keyframes slide-in-right {
+  from {
+    transform: translateX(calc(var(--slide-normal) * -1));
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 删除动画 */
+@keyframes slide-out-left {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(calc(var(--slide-large) * -1));
+    opacity: 0;
+  }
+}
+
+/* 图标动画 */
+.row.item .icon {
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
+
+.row.item:hover .icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* 选中状态过渡 */
+.row.item .checkbox {
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
+
+.row.item.selected .checkbox {
+  transform: scale(1.1);
+}
+
+/* 播放状态动画 */
+.row.item.playing {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* 进度条动画 */
+.progress-bar .progress-fill {
+  transition: width var(--duration-normal) var(--ease-out);
+  will-change: width;
+}
+
+/* 模态框动画 */
+.mdui-dialog {
+  opacity: 0;
+  transform: scale(0.9) translateY(var(--slide-normal));
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
+
+.mdui-dialog.mdui-dialog-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.mdui-overlay {
+  backdrop-filter: blur(0);
+  transition: backdrop-filter var(--duration-slow) var(--ease-out);
+}
+
+.mdui-overlay-show {
+  backdrop-filter: blur(4px);
+}
+
+/* 批量操作区域动画 */
+.batch-actions {
+  transform: translateY(var(--slide-normal));
+  opacity: 0;
+  animation: slide-up var(--duration-normal) var(--ease-bounce) forwards;
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(var(--slide-normal));
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* 播放器动画 */
+.player {
+  transform: translateY(100%);
+  transition: transform var(--duration-normal) var(--ease-bounce);
+}
+
+.player.active {
+  transform: translateY(0);
+}
+
+/* 通用hover效果 */
+.hoverable {
+  transition: all var(--duration-normal) var(--ease-out);
+}
+
+.hoverable:hover {
+  transform: translateY(calc(var(--slide-small) * -1));
+}
+
+/* 加载动画 */
+.loading {
+  animation: rotate 1s var(--ease-in-out) infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
