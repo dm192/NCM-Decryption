@@ -21,24 +21,45 @@
   inset: 0;
   background: currentColor;
   opacity: 0;
-  transition: opacity var(--duration-normal) var(--ease-out);
+  transition: all var(--duration-normal) var(--ease-out);
+  transform: scale(0.8);
+  border-radius: inherit;
 }
 
 .btn:hover {
   transform: translateY(calc(var(--slide-small) * -1));
+  box-shadow: 0 var(--slide-small) var(--slide-normal) rgba(0, 0, 0, 0.2);
+}
+
+.btn:hover::before {
+  opacity: 0.1;
+  transform: scale(1);
 }
 
 .btn:active {
   transform: translateY(0);
   transition-duration: var(--duration-fast);
+  box-shadow: none;
+}
+
+.btn:active::before {
+  opacity: 0.15;
+  transform: scale(0.95);
 }
 
 .btn svg {
-  transition: transform var(--duration-normal) var(--ease-bounce);
+  transition: all var(--duration-normal) var(--ease-bounce);
+  transform-origin: center;
 }
 
 .btn:hover svg {
-  transform: scale(1.1);
+  transform: scale(1.15) rotate(5deg);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+.btn:active svg {
+  transform: scale(0.95) rotate(0deg);
+  transition-duration: var(--duration-fast);
 }
 
 /* 主要按钮 */

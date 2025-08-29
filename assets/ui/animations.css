@@ -3,14 +3,40 @@
   transform: translateX(calc(var(--slide-normal) * -1));
   opacity: 0;
   animation: slide-in-right var(--duration-normal) var(--ease-out) forwards;
+  transition: all var(--duration-normal) var(--ease-out);
+  border: 2px solid transparent;
+  position: relative;
+}
+
+.row.item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+  pointer-events: none;
+}
+
+.row.item:hover {
+  transform: translateX(var(--slide-small));
+  background: var(--bg-1);
+}
+
+.row.item:hover::before {
+  opacity: 0.05;
 }
 
 .row.item.selected {
-  transition: all var(--duration-normal) var(--ease-out);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  transform: scale(1.01);
 }
 
 .row.item.removed {
   animation: slide-out-left var(--duration-normal) var(--ease-in-out) forwards;
+  transform: scale(0.95);
+  opacity: 0;
 }
 
 /* 行动画延迟 */
@@ -77,9 +103,79 @@
 }
 
 /* 进度条动画 */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: progress-shine 2s ease-in-out infinite;
+}
+
 .progress-bar .progress-fill {
+  position: relative;
   transition: width var(--duration-normal) var(--ease-out);
   will-change: width;
+  background: linear-gradient(
+    90deg,
+    var(--primary),
+    var(--primary-hover)
+  );
+}
+
+@keyframes progress-shine {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* 加载中状态 */
+.loading-container {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--slide-small);
+}
+
+.loading-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+.loading-dots::after {
+  content: '...';
+  animation: dots 1.5s steps(4) infinite;
+  width: 1.2em;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
 }
 
 /* 模态框动画 */
@@ -140,16 +236,86 @@
   transform: translateY(calc(var(--slide-small) * -1));
 }
 
+/* 状态反馈动画 */
+@keyframes success-scale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.success-animation {
+  animation: success-scale 0.5s var(--ease-bounce);
+  color: var(--success);
+}
+
+.error-animation {
+  animation: shake 0.4s var(--ease-in-out);
+  color: var(--danger);
+}
+
+/* 气泡提示动画 */
+.tooltip {
+  position: relative;
+  opacity: 0;
+  transform: translateY(var(--slide-small));
+  transition: all var(--duration-normal) var(--ease-bounce);
+}
+
+.tooltip.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 波纹效果 */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: currentColor;
+  opacity: 0;
+  transform: scale(0);
+  animation: ripple-effect 0.6s var(--ease-out);
+}
+
+@keyframes ripple-effect {
+  0% {
+    transform: scale(0);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
 /* 加载动画 */
 .loading {
+  position: relative;
   animation: rotate 1s var(--ease-in-out) infinite;
 }
 
+.loading::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: rotate 1s linear infinite reverse;
+}
+
 @keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
