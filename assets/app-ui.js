@@ -261,7 +261,16 @@
 
     if (refs.btnSettings) refs.btnSettings.addEventListener('click', ()=> showModal(refs.settingsMask));
     if (refs.settingsClose) refs.settingsClose.addEventListener('click', ()=> hideModal(refs.settingsMask));
-    if (refs.openAnnouncementFromSettings) refs.openAnnouncementFromSettings.addEventListener('click', ()=> { hideModal(refs.settingsMask); fetchAndShowAnnouncement(); });
+    if (refs.openAnnouncementFromSettings) {
+      refs.openAnnouncementFromSettings.addEventListener('click', () => {
+        hideModal(refs.settingsMask);
+        fetchAndShowAnnouncement().catch(err => {
+          console.error('公告加载失败', err);
+          if (refs.announceContent) refs.announceContent.textContent = '公告加载失败，请重试。';
+          if (refs.announceRetry) refs.announceRetry.style.display = 'inline';
+        });
+      });
+    }
 
     if (refs.announceOk) refs.announceOk.addEventListener('click', ()=> { if (refs.announceDontShow && refs.announceDontShow.checked){ const days30 = Date.now() + 30*24*3600*1000; localStorage.setItem(ANNOUNCE_HIDE_KEY, String(days30)); } hideModal(refs.announceMask); });
     if (refs.announceRetry) refs.announceRetry.addEventListener('click', ()=> fetchAndShowAnnouncement());
