@@ -1,19 +1,52 @@
 /* styles for NCM tool (完整文件，主题友好版) */
-/* theme variables (default dark) */
+/* Dark theme */
 :root {
-  --bg-0: #071225;
-  --bg-1: linear-gradient(180deg,var(--bg-0),#041222);
-  --card-bg: #0f172a;
-  --modal-bg: var(--card-bg);
+  /* 基础颜色 */
+  --bg-0: #0f172a;
+  --bg-1: #1e293b;
+  --card-bg: #1e293b;
+  --modal-bg: #1e293b;
   --modal-overlay: rgba(0, 0, 0, 0.75);
-  --muted: #9fb3c8;
-  --accent: #7c3aed;
-  --accent2: #6ee7b7;
-  --fg: #e6eef8;
-  --progress-bg: rgba(255,255,255,0.1);
-  --progress-fill: var(--accent);
-  --button-bg: #1e293b;
-  --button-hover: #334155;
+  --fg: #f8fafc;
+  --fg-muted: #94a3b8;
+  
+  /* 强调色 */
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --primary-active: #4f46e5;
+  --success: #10b981;
+  --success-hover: #34d399;
+  --danger: #ef4444;
+  --danger-hover: #f87171;
+  
+  /* 按钮样式 */
+  --btn-primary-bg: var(--primary);
+  --btn-primary-fg: #ffffff;
+  --btn-primary-hover: var(--primary-hover);
+  --btn-primary-active: var(--primary-active);
+  
+  --btn-secondary-bg: #334155;
+  --btn-secondary-fg: var(--fg);
+  --btn-secondary-hover: #475569;
+  --btn-secondary-active: #1e293b;
+  
+  --btn-outline-bg: transparent;
+  --btn-outline-fg: var(--fg-muted);
+  --btn-outline-border: #475569;
+  --btn-outline-hover: #334155;
+  
+  --btn-danger-bg: var(--danger);
+  --btn-danger-fg: #ffffff;
+  --btn-danger-hover: var(--danger-hover);
+  
+  /* 组件样式 */
+  --input-bg: #334155;
+  --input-border: #475569;
+  --input-focus: var(--primary);
+  
+  /* 进度条 */
+  --progress-bg: #334155;
+  --progress-fill: var(--primary);
 }
   --card: #0f1724;
 

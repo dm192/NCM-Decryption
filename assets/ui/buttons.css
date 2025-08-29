@@ -1,0 +1,88 @@
+/* 按钮基础样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  gap: 0.5rem;
+}
+
+/* 主要按钮 */
+.btn.primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+  border: none;
+}
+
+.btn.primary:hover {
+  background: var(--btn-primary-hover);
+}
+
+.btn.primary:active {
+  background: var(--btn-primary-active);
+}
+
+/* 次要按钮 */
+.btn.secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-fg);
+  border: none;
+}
+
+.btn.secondary:hover {
+  background: var(--btn-secondary-hover);
+}
+
+.btn.secondary:active {
+  background: var(--btn-secondary-active);
+}
+
+/* 轮廓按钮 */
+.btn.outline {
+  background: var(--btn-outline-bg);
+  color: var(--btn-outline-fg);
+  border: 1px solid var(--btn-outline-border);
+}
+
+.btn.outline:hover {
+  background: var(--btn-outline-hover);
+}
+
+/* 危险按钮 */
+.btn.danger {
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-fg);
+  border: none;
+}
+
+.btn.danger:hover {
+  background: var(--btn-danger-hover);
+}
+
+/* 禁用状态 */
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 图标按钮 */
+.btn.icon {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+}
+
+/* 按钮大小变体 */
+.btn.sm {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+.btn.lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+}

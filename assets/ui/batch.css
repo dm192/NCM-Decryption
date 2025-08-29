@@ -20,23 +20,32 @@
   gap: 8px;
 }
 
-.batch-actions .btn {
-  padding: 6px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  background: var(--button-bg);
-  color: var(--fg);
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.batch-actions {
+  padding: 1rem;
+  background: var(--bg-1);
+  border-radius: 0.5rem;
+  border: 1px solid var(--input-border);
 }
 
-.batch-actions .btn:hover {
-  background: var(--button-hover);
+.batch-actions .btn-group {
+  display: flex;
+  gap: 0.5rem;
 }
 
-.batch-actions .btn.outline {
-  border: 1px solid var(--muted);
+.batch-actions .btn-group .btn.primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-fg);
+}
+
+.batch-actions .btn-group .btn.outline {
+  background: var(--btn-outline-bg);
+  color: var(--btn-outline-fg);
+  border: 1px solid var(--btn-outline-border);
+}
+
+.batch-actions .btn-group .btn.danger {
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-fg);
 }
 
 /* 进度条样式 */

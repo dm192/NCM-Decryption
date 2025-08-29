@@ -1,0 +1,57 @@
+/* 模态框样式 */
+.mdui-dialog {
+  background: var(--modal-bg) !important;
+  border: 1px solid var(--input-border);
+  border-radius: 0.5rem;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 
+              0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+  color: var(--fg) !important;
+}
+
+.mdui-dialog-title {
+  color: var(--fg) !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  padding: 1.5rem 1.5rem 1rem !important;
+}
+
+.mdui-dialog-content {
+  color: var(--fg-muted) !important;
+  padding: 0 1.5rem 1.5rem !important;
+  line-height: 1.5;
+}
+
+.mdui-dialog-actions {
+  border-top: 1px solid var(--input-border) !important;
+  padding: 1rem 1.5rem !important;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* 确认按钮 */
+.mdui-dialog-actions .mdui-btn-raised {
+  background: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-fg) !important;
+}
+
+.mdui-dialog-actions .mdui-btn-raised:hover {
+  background: var(--btn-primary-hover) !important;
+}
+
+/* 取消按钮 */
+.mdui-dialog-actions .mdui-btn {
+  background: var(--btn-outline-bg) !important;
+  color: var(--btn-outline-fg) !important;
+  border: 1px solid var(--btn-outline-border) !important;
+}
+
+.mdui-dialog-actions .mdui-btn:hover {
+  background: var(--btn-outline-hover) !important;
+}
+
+/* 遮罩层 */
+.mdui-overlay {
+  background-color: var(--modal-overlay) !important;
+  backdrop-filter: blur(4px);
+}
