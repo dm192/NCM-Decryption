@@ -246,9 +246,9 @@
   /* bind events and init */
   function bindEvents(){
     if (!refs) return;
-    // size
-    if (refs.sizeOk) refs.sizeOk.addEventListener('click', ()=> hideModal(refs.sizeWarning));
-    window.addEventListener('resize', ()=> checkWindowSize());
+  // size
+  // 移除“我知道了”按钮的关闭事件，使模态框只能自动关闭
+  window.addEventListener('resize', ()=> checkWindowSize());
 
     attachMaskCloseBehavior(refs.modalMask, ()=> closePlayer());
     attachMaskCloseBehavior(refs.announceMask, ()=> hideModal(refs.announceMask));
