@@ -146,4 +146,52 @@ body.theme-light .modalMask, body.theme-light .announceMask { background: rgba(2
   object-fit:contain;
 }
 
+/* 统一下拉列表框和勾选框样式 */
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 8px 12px;
+  border: 1px solid var(--btn-border);
+  border-radius: 4px;
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+}
+select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+}
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--btn-border);
+  border-radius: 3px;
+  background: var(--card);
+  position: relative;
+  cursor: pointer;
+}
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"]:checked::after {
+  content: '\2713';
+  position: absolute;
+  top: 0;
+  left: 3px;
+  color: var(--btn-fg-on-accent);
+  font-size: 14px;
+}
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 2px var(--accent);
+}
+
 @media (max-width:900px){ .row{grid-template-columns:64px 1fr 80px 80px 140px} .disc{width:120px;height:120px} }
