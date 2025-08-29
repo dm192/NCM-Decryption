@@ -31,9 +31,10 @@ body.theme-light {
   --fg: #0b1220;
   --card: #ffffff;
 
+  /* 把浅色主题下按钮文字改成黑色，保证可读性 */
   --btn-bg: linear-gradient(90deg,#2f2bff,#17a67a);
   --btn-outline-bg: rgba(15,23,36,0.03);
-  --btn-fg: #ffffff;
+  --btn-fg: #0b1220;          /* <-- 改动：浅色主题按钮文字为黑色 */
   --btn-border: rgba(15,23,36,0.06);
 
   --icon-bg: rgba(15,23,36,0.04);
