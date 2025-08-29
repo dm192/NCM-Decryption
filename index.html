@@ -26,7 +26,10 @@
       display:none;
       position:fixed; inset:0; z-index:4000;
       background: rgba(1,6,12,0.6); color:var(--fg);
-      place-items:center; text-align:center; padding:20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align:center; padding:20px;
       opacity:0; transform: translateY(8px) scale(.99); transition: opacity .18s ease, transform .18s ease;
     }
     #sizeWarning.open{
