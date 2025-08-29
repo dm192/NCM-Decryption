@@ -11,6 +11,10 @@
   <link href="assets/ui/batch.css" rel="stylesheet" />
   <link href="assets/ui/modal.css" rel="stylesheet" />
   <link href="assets/ui/animations.css" rel="stylesheet" />
+  <link href="assets/ui/forms.css" rel="stylesheet" />
+  <link href="assets/ui/icons.css" rel="stylesheet" />
+  <link href="assets/ui/footer.css" rel="stylesheet" />
+  <link href="assets/ui/settings.css" rel="stylesheet" />
   
   <link href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-dark.min.css" rel="stylesheet">
 
@@ -120,14 +124,7 @@
         </div>
       </div>
 
-      <div class="footer">
-        <div>
-          <span class="small muted">建议分批处理大文件以降低内存占用。禁止未授权使用本站和作者 Logo；如要使用请联系版权所有者。</span>
-        </div>
-        <div style="display:flex;gap:12px;align-items:center">
-          <div class="logoPlaceholder" id="footerLogo" title="将你的 logo 拖到这里以替换占位">你的 Logo</div>
-        </div>
-      </div>
+      <div style="height: 64px"><!-- 底栏占位 --></div>
     </div>
   </div>
 
@@ -165,7 +162,10 @@
     <div class="announceBox" data-modal-inner>
       <div id="announceContent" class="markdown-body" style="min-height:120px">正在加载公告…</div>
       <div class="announceFooter">
-        <label style="display:flex;align-items:center;gap:8px;margin-right:auto"><input type="checkbox" id="announceDontShow"> 30 天不再显示</label>
+        <label class="checkbox-wrapper" style="margin-right:auto">
+          <input type="checkbox" id="announceDontShow">
+          <span>30 天不再显示</span>
+        </label>
         <button id="announceRetry" class="btn outline" style="margin-right:8px;display:none">重试</button>
         <button id="announceOk" class="announceOk">好的</button>
       </div>
@@ -176,13 +176,26 @@
   <div id="settingsMask" class="announceMask" role="dialog" aria-hidden="true">
     <div class="announceBox" data-modal-inner>
       <h3>设置</h3>
-      <div style="margin-top:12px;color:var(--muted)">
-        <strong>版权与商标</strong>
-        <p>本站和作者相关 Logo 版权所有，未经许可不得盗用。<strong>禁止未经授权地复制、使用或分发他人的 Logo 或商标</strong>。如需使用，请联系版权所有者并获取书面授权。</p>
+      <div class="settings-section">
+        <div class="settings-item">
+          <button id="openAnnounce" class="btn secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+            查看公告
+          </button>
+        </div>
+        
+        <div class="settings-item">
+          <label class="checkbox-wrapper">
+            <input type="checkbox" id="settingsAnnounceDontShow">
+            <span>30 天内不再自动显示公告</span>
+          </label>
+        </div>
       </div>
 
       <div class="announceFooter" style="margin-top:16px">
-        <button id="settingsClose" class="btn outline" style="margin-right:8px">关闭</button>
+        <button id="settingsClose" class="btn outline">关闭</button>
       </div>
     </div>
   </div>

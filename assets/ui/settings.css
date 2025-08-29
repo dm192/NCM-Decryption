@@ -1,0 +1,51 @@
+/* 设置面板样式 */
+.settings-section {
+  margin-top: 16px;
+}
+
+.settings-item {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--hover-bg);
+  border-radius: 8px;
+  transition: background-color var(--duration-normal) var(--ease-out);
+}
+
+.settings-item:hover {
+  background: var(--active-bg);
+}
+
+.settings-item .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* 调整弹窗样式 */
+.announceMask .announceBox {
+  max-width: 480px;
+  width: 90%;
+}
+
+.announceBox h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--fg);
+}
+
+/* 优化公告内容样式 */
+.markdown-body {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* 调整页面内容以适应底栏 */
+.wrap {
+  padding-bottom: calc(64px + 24px) !important;
+}
+
+@media (max-width: 768px) {
+  .wrap {
+    padding-bottom: calc(88px + 24px) !important;
+  }
+}
