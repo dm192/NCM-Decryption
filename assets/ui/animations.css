@@ -40,11 +40,26 @@
 }
 
 /* 行动画延迟 */
-@for $i from 1 through 20 {
-  .row.item:nth-child(#{$i}) {
-    animation-delay: calc(#{$i} * 50ms);
-  }
-}
+.row.item:nth-child(1)  { animation-delay: calc(1 * 50ms); }
+.row.item:nth-child(2)  { animation-delay: calc(2 * 50ms); }
+.row.item:nth-child(3)  { animation-delay: calc(3 * 50ms); }
+.row.item:nth-child(4)  { animation-delay: calc(4 * 50ms); }
+.row.item:nth-child(5)  { animation-delay: calc(5 * 50ms); }
+.row.item:nth-child(6)  { animation-delay: calc(6 * 50ms); }
+.row.item:nth-child(7)  { animation-delay: calc(7 * 50ms); }
+.row.item:nth-child(8)  { animation-delay: calc(8 * 50ms); }
+.row.item:nth-child(9)  { animation-delay: calc(9 * 50ms); }
+.row.item:nth-child(10) { animation-delay: calc(10 * 50ms); }
+.row.item:nth-child(11) { animation-delay: calc(11 * 50ms); }
+.row.item:nth-child(12) { animation-delay: calc(12 * 50ms); }
+.row.item:nth-child(13) { animation-delay: calc(13 * 50ms); }
+.row.item:nth-child(14) { animation-delay: calc(14 * 50ms); }
+.row.item:nth-child(15) { animation-delay: calc(15 * 50ms); }
+.row.item:nth-child(16) { animation-delay: calc(16 * 50ms); }
+.row.item:nth-child(17) { animation-delay: calc(17 * 50ms); }
+.row.item:nth-child(18) { animation-delay: calc(18 * 50ms); }
+.row.item:nth-child(19) { animation-delay: calc(19 * 50ms); }
+.row.item:nth-child(20) { animation-delay: calc(20 * 50ms); }
 
 /* 进入动画 */
 @keyframes slide-in-right {

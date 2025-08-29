@@ -62,9 +62,12 @@
   /* 进度条 */
   --progress-bg: #334155;
   --progress-fill: var(--primary);
-}
-  --card: #0f1724;
+  /* 进度条 */
+  --progress-bg: #334155;
+  --progress-fill: var(--primary);
 
+  /* 额外的UI变量 */
+  --card: #0f1724;
   --btn-bg: linear-gradient(90deg,var(--accent),#4c1d95);
   --btn-outline-bg: transparent;
   --btn-fg: #ffffff;
@@ -92,33 +95,7 @@
   --translate-tiny: 3px;
 }
 
-/* light theme overrides */
-body.theme-light {
-  --bg-0: #f6f8fa;
-  --bg-1: linear-gradient(180deg,#ffffff,#f6f8fa);
-  --card-bg: rgba(2,6,23,0.03);
-  --muted: #556;
-    /* button text color when on colorful/primary background */
-    --btn-fg-on-accent: #ffffff;
-  --accent: #6c63ff;
-  --accent2: #1f9e7a;
-  --fg: #0b1220;
-  --card: #ffffff;
-
-  --btn-bg: linear-gradient(90deg,#2f2bff,#17a67a);
-  --btn-outline-bg: rgba(15,23,36,0.03);
-  --btn-fg: #0b1220;
-  --btn-border: rgba(15,23,36,0.06);
-
-  --icon-bg: rgba(15,23,36,0.04);
-  --icon-fg: #0b1220;
-  --btn-shadow: 0 6px 18px rgba(2,6,23,0.06);
-  --faint: rgba(15,23,36,0.06);
-  --faint-2: rgba(15,23,36,0.03);
-  --dash: rgba(15,23,36,0.06);
-  --row-bg-start: rgba(2,6,23,0.03);
-  --row-bg-end: rgba(2,6,23,0.01);
-}
+/* 移除亮色主题相关代码，统一使用暗色主题 */
 
 html,body{
   height:100%;
@@ -126,9 +103,6 @@ html,body{
   font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
   color:var(--fg);
   background:var(--bg-1);
-  /* 添加主题切换动画 */
-  transition: background var(--duration-slow) var(--timing-regular),
-              color var(--duration-slow) var(--timing-regular);
 }
 .wrap{max-width:1200px;margin:28px auto;padding:16px}
 .card{background:linear-gradient(180deg,var(--card-bg),rgba(255,255,255,0.01));border-radius:12px;padding:16px;box-shadow:0 14px 40px rgba(0,0,0,0.35);color:var(--fg)}
@@ -524,4 +498,6 @@ input[type="checkbox"]:focus-visible {
 }
 
 @media (max-width:600px) {
-  .wrap { margin: 14px auto; padding: 
+  .wrap { margin: 14px auto; padding: 12px; }
+  .list { font-size: 14px; }
+}

@@ -1,7 +1,7 @@
 /* assets/ui/batch.js
    批量操作模块：多选、队列处理和进度管理
 */
-(function(){
+(function(window, document){
   window.NCM_UI = window.NCM_UI || {};
   const state = window.NCM_UI.state || {};
   
@@ -73,6 +73,7 @@
         if (target.id === 'batchDownload') downloadSelected();
         else if (target.id === 'batchDelete') deleteSelected();
       });
+    }
   }
 
   // 使用Web Worker处理文件打包
@@ -313,27 +314,7 @@
     }
   }
 
-  // 工具函数
-  function getSelectedItems() {
-    return Array.from(document.querySelectorAll('.row.item.selected'));
-  }
-
-  function formatFileName(title, artist, ext) {
-    const template = state.settings?.namingTemplate || '{title} - {artist}';
-    return template
-      .replace('{title}', sanitizeFileName(title))
-      .replace('{artist}', sanitizeFileName(artist)) + '.' + ext;
-  }
-
-  function sanitizeFileName(name) {
-    return name.replace(/[<>:"/\\|?*]/g, '_');
-  }
-
-  function formatEta(remaining) {
-    if (remaining <= 0) return '完成';
-    if (remaining === 1) return '1 个文件';
-    return `${remaining} 个文件`;
-  }
+  // 注意：这些函数已在上面定义过，这里删除重复定义
 
   // 初始化
   if (document.readyState === 'loading') {
@@ -350,4 +331,4 @@
     updateProgress,
     endBatchOperation
   });
-})();
+})(window, document);
