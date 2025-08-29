@@ -45,6 +45,7 @@
   window.NCM_UI.seekToPct = seekToPct;
   window.NCM_UI.startDiscLoop = startDiscLoop;
   window.NCM_UI.stopDiscLoop = stopDiscLoop;
+  window.NCM_UI.cleanupPlayer = cleanupPlayer;
 
   // 由于 player 模块运行在页面脚本后载入，它不能直接调用 showModal/hideModal 定义在另一个模块中；
   // 但这些函数会在全局作用域内存在于 app-ui.js，因此在需要时可以直接调用。

@@ -79,7 +79,7 @@
   // 保留 seeking 状态用于 progress 交互
   let seeking = false;
 
-  function releaseMemory(){ cleanupPlayer(); globalObjectURLs.forEach(u=>{ try{ URL.revokeObjectURL(u);}catch(e){} }); globalObjectURLs.clear(); document.querySelectorAll('.row.item').forEach(r=>{ r.__audioBlob=null; r.__coverBlob=null; if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl);}catch(e){} r.__audioUrl=null; } if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl);}catch(e){} r.__coverUrl=null; } }); if (typeof mdui !== 'undefined') mdui.snackbar({message:'已释放内存并撤销临时资源'}); }
+  function releaseMemory(){ window.NCM_UI.cleanupPlayer && window.NCM_UI.cleanupPlayer(); globalObjectURLs.forEach(u=>{ try{ URL.revokeObjectURL(u);}catch(e){} }); globalObjectURLs.clear(); document.querySelectorAll('.row.item').forEach(r=>{ r.__audioBlob=null; r.__coverBlob=null; if (r.__audioUrl){ try{ URL.revokeObjectURL(r.__audioUrl);}catch(e){} r.__audioUrl=null; } if (r.__coverUrl){ try{ URL.revokeObjectURL(r.__coverUrl);}catch(e){} r.__coverUrl=null; } }); if (typeof mdui !== 'undefined') mdui.snackbar({message:'已释放内存并撤销临时资源'}); }
 
   /* announcement */
   function shouldShowAnnouncement(){ const until = localStorage.getItem(ANNOUNCE_HIDE_KEY); if (!until) return true; const t = parseInt(until,10); if (isNaN(t)) return true; return Date.now() > t; }
