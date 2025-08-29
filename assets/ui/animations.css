@@ -193,33 +193,75 @@
   75% { content: '...'; }
 }
 
-/* 模态框动画 */
+/* 模态框动画 - 增强版 */
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(var(--slide-normal));
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(var(--slide-normal));
+  }
+}
+
 .modalMask,
 .announceMask {
-  backdrop-filter: blur(0);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
   transition: all var(--duration-normal) var(--ease-out);
+  backdrop-filter: blur(0);
   opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
 }
 
 .modalMask[aria-hidden="false"],
 .announceMask[aria-hidden="false"] {
-  backdrop-filter: blur(8px);
   opacity: 1;
-  pointer-events: auto;
+  visibility: visible;
+  backdrop-filter: blur(8px);
 }
 
+/* 模态框内容动画 */
 .modal,
 .announceBox {
   opacity: 0;
   transform: scale(0.95) translateY(var(--slide-normal));
-  transition: all var(--duration-normal) var(--ease-bounce);
+  transition: transform var(--duration-normal) var(--ease-bounce),
+              opacity var(--duration-normal) var(--ease-out);
+  will-change: transform, opacity;
 }
 
 .modalMask[aria-hidden="false"] .modal,
 .announceMask[aria-hidden="false"] .announceBox {
   opacity: 1;
   transform: scale(1) translateY(0);
+  animation: modal-in var(--duration-normal) var(--ease-bounce);
+}
+
+/* 模态框关闭动画 */
+.modalMask[aria-hidden="true"] .modal,
+.announceMask[aria-hidden="true"] .announceBox {
+  animation: modal-out var(--duration-normal) var(--ease-in-out);
 }
 
 /* 批量操作区域动画 */
@@ -240,14 +282,42 @@
   }
 }
 
-/* 播放器动画 */
+/* 播放器特殊动画 */
+@keyframes player-in {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes player-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
 .modal[aria-label="播放器"] {
   transform: translateY(100%);
   transition: transform var(--duration-normal) var(--ease-bounce);
+  will-change: transform, opacity;
 }
 
 .modalMask[aria-hidden="false"] .modal[aria-label="播放器"] {
   transform: translateY(0);
+  animation: player-in var(--duration-normal) var(--ease-bounce);
+}
+
+.modalMask[aria-hidden="true"] .modal[aria-label="播放器"] {
+  animation: player-out var(--duration-normal) var(--ease-in-out);
 }
 
 /* 封面旋转动画 */
