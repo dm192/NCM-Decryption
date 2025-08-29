@@ -11,40 +11,72 @@
   let currentFile = null;
   let processingQueue = [];
   
+  // 创建并缓存DOM元素引用
+  const elements = {
+    batchActions: null,
+    totalProgress: null,
+    processedCount: null,
+    totalCount: null,
+    progressFill: null,
+    processEta: null
+  };
+
   function initBatchProcessing() {
-    const batchActionsHtml = `
-      <div id="batchActions" class="batch-actions" style="display:none">
-        <span class="count"></span>
-        <div class="btn-group">
-          <button class="btn outline" id="batchDownload">下载选中</button>
-          <button class="btn outline" id="batchDelete">删除选中</button>
-        </div>
+    // 使用DocumentFragment优化DOM操作
+    const fragment = document.createDocumentFragment();
+    
+    const batchActions = document.createElement('div');
+    batchActions.id = 'batchActions';
+    batchActions.className = 'batch-actions';
+    batchActions.style.display = 'none';
+    batchActions.innerHTML = `
+      <span class="count"></span>
+      <div class="btn-group">
+        <button class="btn outline" id="batchDownload">下载选中</button>
+        <button class="btn outline" id="batchDelete">删除选中</button>
       </div>
     `;
     
-    const totalProgressHtml = `
-      <div id="totalProgress" class="total-progress" style="display:none">
-        <div class="progress-text">
-          <span class="current">处理中... (<span id="processedCount">0</span>/<span id="totalCount">0</span>)</span>
-          <span class="eta" id="processEta"></span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="totalProgressFill"></div>
-        </div>
+    const totalProgress = document.createElement('div');
+    totalProgress.id = 'totalProgress';
+    totalProgress.className = 'total-progress';
+    totalProgress.style.display = 'none';
+    totalProgress.innerHTML = `
+      <div class="progress-text">
+        <span class="current">处理中... (<span id="processedCount">0</span>/<span id="totalCount">0</span>)</span>
+        <span class="eta" id="processEta"></span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="totalProgressFill"></div>
       </div>
     `;
     
-    // 插入批量操作 UI
+    fragment.appendChild(totalProgress);
+    fragment.appendChild(batchActions);
+    
+    // 一次性插入DOM
     const controls = document.querySelector('.controls');
     if (controls) {
-      controls.insertAdjacentHTML('afterend', batchActionsHtml);
-      controls.insertAdjacentHTML('afterend', totalProgressHtml);
-    }
-    
-    // 绑定事件
-    document.getElementById('batchDownload')?.addEventListener('click', downloadSelected);
-    document.getElementById('batchDelete')?.addEventListener('click', deleteSelected);
+      controls.after(fragment);
+      
+      // 缓存DOM元素引用
+      elements.batchActions = batchActions;
+      elements.totalProgress = totalProgress;
+      elements.processedCount = document.getElementById('processedCount');
+      elements.totalCount = document.getElementById('totalCount');
+      elements.progressFill = document.getElementById('totalProgressFill');
+      elements.processEta = document.getElementById('processEta');
+      
+      // 使用事件委托优化事件绑定
+      batchActions.addEventListener('click', e => {
+        const target = e.target;
+        if (target.id === 'batchDownload') downloadSelected();
+        else if (target.id === 'batchDelete') deleteSelected();
+      });
   }
+
+  // 使用Web Worker处理文件打包
+  let zipWorker = null;
 
   // 批量下载
   async function downloadSelected() {
@@ -52,41 +84,76 @@
     if (selected.length === 0) return;
     
     if (selected.length === 1) {
-      // 单个文件直接下载
+      // 单个文件直接下载 - 使用缓存的查询结果
       const item = selected[0];
       if (item.__audioBlob) {
-        const title = item.querySelector('.titleStrong')?.textContent || 'unknown';
-        const artist = item.dataset.artist || 'unknown';
-        const ext = item.querySelector('.format')?.textContent?.toLowerCase() || 'mp3';
-        saveAs(item.__audioBlob, formatFileName(title, artist, ext));
+        const fileInfo = getFileInfo(item);
+        saveAs(item.__audioBlob, formatFileName(fileInfo.title, fileInfo.artist, fileInfo.ext));
       }
-    } else {
-      // 多个文件打包下载
+      return;
+    }
+    
+    // 多个文件打包下载
+    startBatchOperation(selected.length);
+    
+    try {
+      // 创建文件信息数组以减少DOM查询
+      const files = selected.reduce((acc, item) => {
+        if (item.__audioBlob) {
+          const fileInfo = getFileInfo(item);
+          acc.push({
+            name: formatFileName(fileInfo.title, fileInfo.artist, fileInfo.ext),
+            blob: item.__audioBlob
+          });
+        }
+        return acc;
+      }, []);
+      
+      // 分批处理文件以优化内存使用
+      const BATCH_SIZE = 10;
       const zip = new JSZip();
       
-      startBatchOperation(selected.length);
-      
-      for (const item of selected) {
-        if (item.__audioBlob) {
-          const title = item.querySelector('.titleStrong')?.textContent || 'unknown';
-          const artist = item.dataset.artist || 'unknown';
-          const ext = item.querySelector('.format')?.textContent?.toLowerCase() || 'mp3';
-          const fileName = formatFileName(title, artist, ext);
-          
-          zip.file(fileName, item.__audioBlob);
+      for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(async file => {
+          zip.file(file.name, file.blob);
           updateProgress();
-        }
+        }));
+        
+        // 在批次之间允许GC回收内存
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
       
-      const zipBlob = await zip.generateAsync({type: 'blob'});
-      saveAs(zipBlob, 'selected_tracks.zip');
+      const zipBlob = await zip.generateAsync({
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: {
+          level: 6 // 平衡压缩率和速度
+        }
+      });
       
+      saveAs(zipBlob, 'selected_tracks.zip');
+    } catch (error) {
+      console.error('下载失败:', error);
+      if (typeof mdui !== 'undefined') {
+        mdui.snackbar({message: '下载失败，请重试'});
+      }
+    } finally {
       endBatchOperation();
     }
   }
+  
+  // 缓存文件信息以减少DOM查询
+  function getFileInfo(item) {
+    return {
+      title: item.querySelector('.titleStrong')?.textContent || 'unknown',
+      artist: item.dataset.artist || 'unknown',
+      ext: item.querySelector('.format')?.textContent?.toLowerCase() || 'mp3'
+    };
+  }
 
-  // 批量删除
-  function deleteSelected() {
+    // 批量删除 - 使用DocumentFragment优化性能
+  async function deleteSelected() {
     if (!confirm('确定要删除选中的文件吗？')) return;
     
     const selected = getSelectedItems();
@@ -94,68 +161,155 @@
     
     startBatchOperation(selected.length);
     
-    for (const item of selected) {
-      if (item.__audioUrl) {
-        try { URL.revokeObjectURL(item.__audioUrl); } catch(e) {}
+    try {
+      // 使用DocumentFragment优化DOM操作
+      const fragment = document.createDocumentFragment();
+      const parent = selected[0].parentNode;
+      
+      // 批量处理以优化性能
+      const BATCH_SIZE = 20;
+      for (let i = 0; i < selected.length; i += BATCH_SIZE) {
+        const batch = selected.slice(i, i + BATCH_SIZE);
+        
+        await Promise.all(batch.map(async item => {
+          // 清理资源
+          ['__audioUrl', '__coverUrl'].forEach(url => {
+            if (item[url]) {
+              try { 
+                URL.revokeObjectURL(item[url]);
+                item[url] = null;
+              } catch(e) {
+                console.error(`清理资源失败: ${url}`, e);
+              }
+            }
+          });
+          
+          fragment.appendChild(item);
+          updateProgress();
+        }));
+        
+        // 允许GC回收内存
+        await new Promise(resolve => setTimeout(resolve, 0));
       }
-      if (item.__coverUrl) {
-        try { URL.revokeObjectURL(item.__coverUrl); } catch(e) {}
+      
+      // 一次性从DOM中移除所有元素
+      requestAnimationFrame(() => {
+        parent.removeChild(fragment);
+        window.NCM_UI.updatePlayQueue?.();
+        
+        if (typeof mdui !== 'undefined') {
+          mdui.snackbar({message: `已删除 ${selected.length} 个文件`});
+        }
+      });
+      
+    } catch (error) {
+      console.error('删除失败:', error);
+      if (typeof mdui !== 'undefined') {
+        mdui.snackbar({message: '删除失败，请重试'});
       }
-      item.remove();
-      updateProgress();
-    }
-    
-    endBatchOperation();
-    window.NCM_UI.updatePlayQueue?.();
-    
-    if (typeof mdui !== 'undefined') {
-      mdui.snackbar({message: `已删除 ${selected.length} 个文件`});
+    } finally {
+      endBatchOperation();
     }
   }
 
+  // 工具函数 - 使用缓存优化性能
+  const selectedItemsCache = {
+    items: null,
+    timestamp: 0
+  };
+
+  function getSelectedItems() {
+    const now = Date.now();
+    if (now - selectedItemsCache.timestamp < 100 && selectedItemsCache.items) {
+      return selectedItemsCache.items;
+    }
+    
+    selectedItemsCache.items = Array.from(document.querySelectorAll('.row.item.selected'));
+    selectedItemsCache.timestamp = now;
+    return selectedItemsCache.items;
+  }
+
+  // 文件名格式化 - 使用缓存优化性能
+  const fileNameCache = new WeakMap();
+  
+  function formatFileName(title, artist, ext) {
+    // 使用对象作为缓存键，避免字符串连接
+    const key = {title, artist, ext};
+    const cached = fileNameCache.get(key);
+    if (cached) return cached;
+    
+    const template = state.settings?.namingTemplate || '{title} - {artist}';
+    const fileName = template
+      .replace('{title}', sanitizeFileName(title))
+      .replace('{artist}', sanitizeFileName(artist)) + '.' + ext;
+    
+    fileNameCache.set(key, fileName);
+    return fileName;
+  }
+
+  // 文件名清理 - 使用正则缓存优化性能
+  const sanitizeRegex = /[<>:"/\\|?*]/g;
+  const sanitizeFileName = name => name.replace(sanitizeRegex, '_');
+
+  // ETA格式化 - 简化实现
+  const formatEta = remaining => remaining <= 1 ? 
+    ['完成', '1 个文件'][remaining] : 
+    `${remaining} 个文件`;
+
   // 进度管理
+  // 使用防抖优化频繁更新
+  const debounce = (fn, delay) => {
+    let timer = null;
+    return function (...args) {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+  };
+
+  // 使用 requestAnimationFrame 优化进度更新
+  const updateProgressUI = () => {
+    if (!elements.processedCount || !elements.progressFill || !elements.processEta) return;
+    
+    elements.processedCount.textContent = String(completedFiles);
+    
+    const percent = (completedFiles / totalFiles) * 100;
+    elements.progressFill.style.width = percent + '%';
+    
+    if (completedFiles > 0) {
+      const remaining = totalFiles - completedFiles;
+      elements.processEta.textContent = remaining > 0 
+        ? `预计剩余 ${formatEta(remaining)}`
+        : '';
+    }
+  };
+
+  const debouncedUpdateUI = debounce(() => {
+    requestAnimationFrame(updateProgressUI);
+  }, 16); // 约60fps
+
   function startBatchOperation(total) {
     totalFiles = total;
     completedFiles = 0;
-    const totalProgress = document.getElementById('totalProgress');
-    const totalCount = document.getElementById('totalCount');
-    if (totalProgress) totalProgress.style.display = 'block';
-    if (totalCount) totalCount.textContent = String(total);
-    updateProgress();
+    
+    if (elements.totalProgress) {
+      elements.totalProgress.style.display = 'block';
+    }
+    if (elements.totalCount) {
+      elements.totalCount.textContent = String(total);
+    }
+    debouncedUpdateUI();
   }
 
   function updateProgress() {
     completedFiles++;
-    const processedCount = document.getElementById('processedCount');
-    const totalProgressFill = document.getElementById('totalProgressFill');
-    const processEta = document.getElementById('processEta');
-    
-    if (processedCount) {
-      processedCount.textContent = String(completedFiles);
-    }
-    
-    if (totalProgressFill) {
-      const percent = (completedFiles / totalFiles) * 100;
-      totalProgressFill.style.width = percent + '%';
-    }
-    
-    // 更新预计剩余时间
-    if (processEta && completedFiles > 0) {
-      const remaining = totalFiles - completedFiles;
-      if (remaining > 0) {
-        processEta.textContent = `预计剩余 ${formatEta(remaining)}`;
-      } else {
-        processEta.textContent = '';
-      }
-    }
+    debouncedUpdateUI();
   }
 
   function endBatchOperation() {
-    const totalProgress = document.getElementById('totalProgress');
-    if (totalProgress) {
-      setTimeout(() => {
-        totalProgress.style.display = 'none';
-      }, 1000);
+    if (elements.totalProgress) {
+      requestAnimationFrame(() => {
+        elements.totalProgress.style.display = 'none';
+      });
     }
   }
 

@@ -77,3 +77,11 @@
     transform: translateY(0);
   }
 }
+
+/* 优化GPU加速 */
+.batch-actions,
+.total-progress,
+.progress-fill {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}

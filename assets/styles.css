@@ -3,15 +3,17 @@
 :root {
   --bg-0: #071225;
   --bg-1: linear-gradient(180deg,var(--bg-0),#041222);
-  --card-bg: rgba(255,255,255,0.02);
+  --card-bg: #0f172a;
+  --modal-bg: var(--card-bg);
+  --modal-overlay: rgba(0, 0, 0, 0.75);
   --muted: #9fb3c8;
   --accent: #7c3aed;
   --accent2: #6ee7b7;
   --fg: #e6eef8;
   --progress-bg: rgba(255,255,255,0.1);
   --progress-fill: var(--accent);
-  --button-bg: rgba(255,255,255,0.05);
-  --button-hover: rgba(255,255,255,0.1);
+  --button-bg: #1e293b;
+  --button-hover: #334155;
 }
   --card: #0f1724;
 
