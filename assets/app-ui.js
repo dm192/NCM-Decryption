@@ -15,52 +15,11 @@
   const ANNOUNCEMENT_URL = 'https://cdn-cf.dormant.top/ncm/announcement.md';
   const ANNOUNCE_HIDE_KEY = 'ncm_announce_hide_until';
 
-  /* modal helpers */
-  function _findModalInner(el){ if (!el) return null; return el.querySelector('[data-modal-inner]') || el.querySelector('.modal') || el.querySelector('.announceBox'); }
-  function showModal(el){
-    if (!el) return;
-    // cancel any pending hide for this modal
-    if (el.__hideTimer) { clearTimeout(el.__hideTimer); el.__hideTimer = null; }
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    el.style.display = 'flex';
-    el.setAttribute('aria-hidden','false');
-    requestAnimationFrame(()=> {
-      const inner = _findModalInner(el);
-      if (inner) inner.classList.add('open');
-      if (el.id === 'sizeWarning') el.classList.add('open');
-    });
-  }
-  function hideModal(el){
-    if (!el) return;
-    const inner = _findModalInner(el);
-    if (inner) inner.classList.remove('open');
-    if (el.id === 'sizeWarning') el.classList.remove('open');
-    // schedule hide after animation; store timer so it can be cancelled by showModal
-    if (el.__hideTimer) clearTimeout(el.__hideTimer);
-    el.__hideTimer = setTimeout(()=>{
-      // if modal was reopened meanwhile (has .open), skip hiding
-      const innerNow = _findModalInner(el);
-      const isOpen = (innerNow && innerNow.classList.contains('open')) || el.classList.contains('open');
-      if (isOpen) { el.__hideTimer = null; return; }
-      el.style.display = 'none';
-      el.setAttribute('aria-hidden','true');
-      document.documentElement.style.overflow = '';
-      document.body.style.overflow = '';
-      el.__hideTimer = null;
-    }, 260);
-  }
-  function attachMaskCloseBehavior(maskEl, onMaskClose){
-    if (!maskEl) return;
-    maskEl.addEventListener('click', (ev)=>{
-      const inner = _findModalInner(maskEl);
-      if (!inner) return;
-      if (!inner.contains(ev.target)) {
-        if (typeof onMaskClose === 'function') onMaskClose();
-        else hideModal(maskEl);
-      }
-    });
-  }
+  /* modal helpers moved to assets/ui/modals.js */
+  const _findModalInner = (...args) => window.NCM_UI._findModalInner?.(...args);
+  const showModal = (...args) => window.NCM_UI.showModal?.(...args);
+  const hideModal = (...args) => window.NCM_UI.hideModal?.(...args);
+  const attachMaskCloseBehavior = (...args) => window.NCM_UI.attachMaskCloseBehavior?.(...args);
 
   /* DOM refs */
   function initDOMRefs(){
