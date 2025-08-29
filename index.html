@@ -62,7 +62,14 @@
         <div class="controls">
           <button id="btnSettings" class="btn outline" title="设置">⚙️ 设置</button>
           <button id="clearBtn" class="btn outline">清空</button>
-          <button id="zipBtn" class="btn" disabled>全部打包 ZIP</button>
+          <button id="zipBtn" class="btn primary" disabled>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            全部打包 ZIP
+          </button>
           <button id="releaseBtn" class="btn outline">释放内存</button>
         </div>
       </div>
@@ -70,7 +77,17 @@
       <div id="drop" class="drop" tabindex="0" style="margin-top:12px">
         <div style="font-weight:600">拖放 .ncm 文件到此，或点击选择文件上传（支持批量）。</div>
         <div class="small" style="margin-top:6px;color:var(--muted)">播放窗口支持进度定位、显示时长、封面下载；可手动释放内存。</div>
-        <div style="margin-top:10px"><label class="btn" style="cursor:pointer">选择文件<input id="fileInput" type="file" accept=".ncm" multiple hidden></label></div>
+        <div style="margin-top:10px">
+          <label class="btn primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            选择文件
+            <input id="fileInput" type="file" accept=".ncm" multiple hidden>
+          </label>
+        </div>
       </div>
 
       <div class="list" id="list" aria-live="polite">
