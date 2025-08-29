@@ -136,5 +136,14 @@ body.theme-light .modalMask, body.theme-light .announceMask { background: rgba(2
 .markdown-body{background:transparent;color:inherit;padding:0}
 .footer{margin-top:14px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
 .logoPlaceholder{width:40px;height:40px;border-radius:8px;background:var(--icon-bg);display:inline-flex;align-items:center;justify-content:center;overflow:hidden}
+/* support non-square logos: keep aspect ratio, fit inside the box */
+.logoPlaceholder img, .logoPlaceholder svg {
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  display:block;
+  object-fit:contain;
+}
 
 @media (max-width:900px){ .row{grid-template-columns:64px 1fr 80px 80px 140px} .disc{width:120px;height:120px} }
