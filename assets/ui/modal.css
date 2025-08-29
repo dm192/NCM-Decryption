@@ -1,0 +1,139 @@
+/* 模态框基础样式 */
+.mdui-dialog {
+  background-color: var(--modal-bg) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2),
+              0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  overflow: hidden;
+  
+  /* 动画相关 */
+  opacity: 0;
+  transform: scale(0.95) translateY(var(--slide-normal));
+  transition: all var(--duration-normal) var(--ease-bounce);
+  will-change: transform, opacity;
+}
+
+/* 打开动画 */
+.mdui-dialog.mdui-dialog-open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+/* 关闭动画 */
+.mdui-dialog.mdui-dialog-closing {
+  opacity: 0;
+  transform: scale(0.95) translateY(calc(var(--slide-normal) * -1));
+  transition-timing-function: var(--ease-out);
+}
+
+/* 遮罩层动画 */
+.mdui-overlay {
+  opacity: 0;
+  backdrop-filter: blur(0);
+  transition: all var(--duration-normal) var(--ease-out);
+  will-change: opacity, backdrop-filter;
+  background-color: var(--modal-overlay) !important;
+}
+
+.mdui-overlay.mdui-overlay-show {
+  opacity: 1;
+  backdrop-filter: blur(8px);
+}
+
+/* 模态框标题 */
+.mdui-dialog-title {
+  padding: 24px 24px 16px !important;
+  color: var(--fg) !important;
+  font-size: 1.25rem !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  
+  /* 动画 */
+  opacity: 0;
+  transform: translateY(var(--slide-small));
+  transition: all var(--duration-normal) var(--ease-out);
+  transition-delay: calc(var(--duration-normal) * 0.3);
+}
+
+.mdui-dialog-open .mdui-dialog-title {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 模态框内容 */
+.mdui-dialog-content {
+  color: var(--fg-muted) !important;
+  padding: 0 24px 20px !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  
+  /* 动画 */
+  opacity: 0;
+  transform: translateY(var(--slide-normal));
+  transition: all var(--duration-normal) var(--ease-out);
+  transition-delay: calc(var(--duration-normal) * 0.5);
+}
+
+.mdui-dialog-open .mdui-dialog-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 模态框按钮容器 */
+.mdui-dialog-actions {
+  padding: 16px 24px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  
+  /* 动画 */
+  opacity: 0;
+  transform: translateY(var(--slide-small));
+  transition: all var(--duration-normal) var(--ease-out);
+  transition-delay: calc(var(--duration-normal) * 0.7);
+}
+
+.mdui-dialog-open .mdui-dialog-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 模态框按钮 */
+.mdui-dialog-actions .mdui-btn {
+  min-width: 84px !important;
+  height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: 6px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all var(--duration-normal) var(--ease-out) !important;
+}
+
+/* 主要按钮 */
+.mdui-dialog-actions .mdui-btn-raised {
+  background: var(--primary) !important;
+  color: white !important;
+  border: none !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.mdui-dialog-actions .mdui-btn-raised:hover {
+  background: var(--primary-hover) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* 次要按钮 */
+.mdui-dialog-actions .mdui-btn {
+  background: var(--button-bg) !important;
+  color: var(--fg) !important;
+  border: 1px solid var(--btn-outline-border) !important;
+}
+
+.mdui-dialog-actions .mdui-btn:hover {
+  background: var(--button-hover) !important;
+  border-color: var(--primary) !important;
+}
